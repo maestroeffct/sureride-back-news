@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,43 +7,45 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  firstName     String
-  lastName      String
+  firstName String
+  lastName  String
 
-  email         String   @unique
-  phoneCountry  String
-  phoneNumber   String
+  email        String @unique
+  phoneCountry String
+  phoneNumber  String
 
-  dateOfBirth   DateTime
-  nationality   String
+  dateOfBirth DateTime
+  nationality String
 
-  password      String
-  authProvider  AuthProvider @default(EMAIL)
+  password     String
+  authProvider AuthProvider @default(EMAIL)
 
-  isVerified    Boolean  @default(false)
-  isActive      Boolean  @default(true)
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
 
-  otps          Otp[]
+  profileStatus ProfileStatus @default(INCOMPLETE)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  otps     Otp[]
+  sessions Session[]
+  bookings Booking[]
+  kyc      UserKyc?
 
-
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([phoneCountry, phoneNumber])
 }
 
-
 model Otp {
-  id        String   @id @default(uuid())
-  userId    String
-  code      String
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  lastSentAt DateTime @default(now())
-
+  id         String     @id @default(uuid())
+  userId     String
+  code       String
+  purpose    OtpPurpose
+  expiresAt  DateTime
+  used       Boolean    @default(false)
+  lastSentAt DateTime   @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -53,9 +54,357 @@ model Otp {
   @@index([userId])
 }
 
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// CAR-RENTAL INTEGRATION
+
+model Country {
+  id       String  @id @default(uuid())
+  name     String
+  code     String  @unique // NG, GH, UK
+  isActive Boolean @default(true)
+
+  locations Location[]
+
+  createdAt DateTime @default(now())
+}
+
+model Location {
+  id        String @id @default(uuid())
+  name      String
+  address   String
+  countryId String
+  latitude  Float?
+  longitude Float?
+
+  providerId String
+  provider   RentalProvider @relation(fields: [providerId], references: [id])
+  country    Country        @relation(fields: [countryId], references: [id])
+
+  cars Car[]
+
+  createdAt DateTime @default(now())
+}
+
+model CarImage {
+  id        String  @id @default(uuid())
+  carId     String
+  url       String
+  isPrimary Boolean @default(false)
+
+  car Car @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([carId])
+}
+
+model Car {
+  id String @id @default(uuid())
+
+  brand    String
+  model    String
+  category CarCategory
+  year     Int
+
+  seats         Int
+  bags          String
+  hasAC         Boolean
+  transmission  Transmission
+  mileagePolicy MileagePolicy
+
+  features CarFeature[]
+
+  dailyRate  Float
+  hourlyRate Float?
+
+  isActive Boolean @default(true)
+
+  providerId String
+  provider   RentalProvider @relation(fields: [providerId], references: [id])
+
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  bookings          Booking[]
+  images            CarImage[]
+  insurancePackages InsurancePackage[]
+
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id     String @id @default(uuid())
+  userId String
+  carId  String
+
+  pickupAt DateTime
+  returnAt DateTime
+
+  pickupLocationId  String
+  dropoffLocationId String
+
+  pricingUnit  PricingUnit
+  basePrice    Float
+  insuranceFee Float
+  totalPrice   Float
+
+  insuranceId String?
+
+  status BookingStatus @default(PENDING)
+
+  paymentProvider  PaymentProvider?
+  paymentStatus    PaymentStatus    @default(UNPAID)
+  paymentReference String?          @unique
+  paymentError     String?
+  paidAt           DateTime?
+  currency         String           @default("ngn")
+
+  user      User              @relation(fields: [userId], references: [id])
+  car       Car               @relation(fields: [carId], references: [id])
+  insurance InsurancePackage? @relation(fields: [insuranceId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model RentalProvider {
+  id String @id @default(uuid())
+
+  name    String
+  logoUrl String?
+
+  email String @unique
+  password String
+
+  phone String?
+
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  createdBy ProviderSource @default(SURERIDE_ADMIN)
+
+  locations         Location[]
+  cars              Car[]
+  insurancePackages InsurancePackage[]
+  features          Feature[]
+  sessions   ProviderSession[]
+
+  createdAt DateTime @default(now())
+}
+
+model ProviderSession {
+  id         String   @id @default(uuid())
+  providerId String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+
+  provider RentalProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model InsurancePackage {
+  id String @id @default(uuid())
+
+  name        String
+  description String
+  dailyPrice  Float
+  isActive    Boolean @default(true)
+
+  providerId String? // null = global (admin)
+  provider   RentalProvider? @relation(fields: [providerId], references: [id])
+
+  // optional: attach directly to specific cars
+  carId String?
+  car   Car?    @relation(fields: [carId], references: [id])
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+
+  @@index([providerId])
+  @@index([carId])
+}
+
+model UserKyc {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  state       String
+  region      String
+  homeAddress String
+
+  governmentIdType   String
+  governmentIdNumber String
+
+  driverLicenseNumber String
+  driverLicenseExpiry DateTime
+
+  passportPhotoUrl      String
+  governmentIdFrontUrl  String
+  governmentIdBackUrl   String
+  driverLicenseFrontUrl String
+  driverLicenseBackUrl  String
+
+  status ProfileStatus @default(PENDING_VERIFICATION)
+
+  rejectionReason String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum FeatureCategory {
+  SAFETY
+  PROTECTION
+  RENTAL_POLICY
+  COMFORT
+  OTHER
+}
+
+model Feature {
+  id       String          @id @default(uuid())
+  name     String
+  category FeatureCategory
+  icon     String?
+
+  // HYBRID OWNERSHIP:
+  // - null => Global feature (created by admin)
+  // - not null => Provider-owned feature
+  providerId String?
+  provider   RentalProvider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  isActive Boolean @default(true)
+
+  cars CarFeature[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([providerId, name]) // provider can't duplicate their own feature name
+  @@index([providerId])
+}
+
+model CarFeature {
+  id String @id @default(uuid())
+
+  carId     String
+  featureId String
+
+  car     Car     @relation(fields: [carId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([carId, featureId])
+  @@index([carId])
+  @@index([featureId])
+}
+
+model Admin {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  role      AdminRole @default(SUPER_ADMIN)
+  isActive  Boolean   @default(true)
+
+  sessions  AdminSession[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model AdminSession {
+  id        String   @id @default(uuid())
+  adminId   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  SUPPORT
+  FINANCE
+}
+
+
+enum ProviderSource {
+  SURERIDE_ADMIN
+  PROVIDER_SELF_REGISTERED
+}
+
+enum OtpPurpose {
+  VERIFY_ACCOUNT
+  RESET_PASSWORD
+}
 
 enum AuthProvider {
   EMAIL
   GOOGLE
+}
+
+enum PricingUnit {
+  HOURLY
+  DAILY
+}
+
+enum PaymentProvider {
+  STRIPE
+}
+
+enum PaymentStatus {
+  UNPAID
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum CarCategory {
+  COMPACT
+  ECONOMY
+  LUXURY
+}
+
+enum Transmission {
+  AUTOMATIC
+  MANUAL
+}
+
+enum MileagePolicy {
+  UNLIMITED
+  LIMITED
+}
+
+enum ProfileStatus {
+  INCOMPLETE
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
 }

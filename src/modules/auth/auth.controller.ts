@@ -1,10 +1,21 @@
 import { Request, Response } from "express";
-import { loginUser, registerUser } from "./auth.service";
+import {
+  forgotPassword,
+  loginUser,
+  logoutUser,
+  registerUser,
+  resetPassword,
+} from "./auth.service";
 import { registerSchema } from "./auth.validation";
 import { ZodError } from "zod";
 import { prisma } from "../../prisma";
 import { signToken } from "../../utils/jwt";
-import { resendOtp, verifyOtp } from "./otp.service";
+import {
+  resendForgotPasswordOtp,
+  resendOtp,
+  verifyOtp,
+  verifyResetOtp,
+} from "./otp.service";
 
 export async function register(req: Request, res: Response) {
   try {
@@ -174,6 +185,110 @@ export async function resendOtpHandler(req: Request, res: Response) {
     }
 
     console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getMe(req: Request, res: Response) {
+  const userId = req.user?.userId;
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      dateOfBirth: true,
+      nationality: true,
+      phoneCountry: true,
+      phoneNumber: true,
+      isVerified: true,
+      isActive: true,
+      profileStatus: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.json({
+    message: "Authenticated",
+    user,
+  });
+}
+
+export async function forgotPasswordHandler(req: Request, res: Response) {
+  const { email } = req.body;
+
+  await forgotPassword(email);
+
+  return res.json({
+    message: "If the email exists, a verification code has been sent",
+  });
+}
+
+export async function verifyResetOtpHandler(req: Request, res: Response) {
+  const { email, code } = req.body;
+
+  const { userId } = await verifyResetOtp(email, code);
+
+  return res.json({
+    message: "OTP verified",
+    userId,
+  });
+}
+
+export async function resetPasswordHandler(req: Request, res: Response) {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "userId and password required" });
+  }
+
+  await resetPassword(email, password);
+
+  return res.json({
+    message: "Password reset successful",
+  });
+}
+
+export async function logout(req: Request, res: Response) {
+  const { userId, sessionId } = req.user!;
+  if (!sessionId) {
+    return res.status(400).json({ message: "sessionId is required" });
+  }
+  await logoutUser(userId, sessionId);
+
+  return res.json({ message: "Logged out successfully" });
+}
+
+export async function resendForgotPassword(req: Request, res: Response) {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    await resendForgotPasswordOtp(email);
+
+    return res.json({
+      message: "Verification code resent to your email",
+    });
+  } catch (err: any) {
+    if (err.message === "OTP_TOO_SOON") {
+      return res.status(429).json({
+        message: "Please wait before requesting another code",
+      });
+    }
+
     return res.status(500).json({ message: "Internal server error" });
   }
 }

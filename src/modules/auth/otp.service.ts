@@ -5,15 +5,19 @@ export function generateCode() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-export async function generateOtp(userId: string) {
+export async function generateOtp(
+  userId: string,
+  purpose: "VERIFY_ACCOUNT" | "RESET_PASSWORD" = "VERIFY_ACCOUNT",
+) {
   const code = generateCode();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
   return prisma.otp.create({
     data: {
       userId,
       code,
       expiresAt,
+      purpose,
     },
   });
 }
@@ -91,7 +95,7 @@ export async function resendOtp(userId: string) {
     const lastSent = existingOtp.lastSentAt.getTime();
     if (now - lastSent < RESEND_COOLDOWN_MS) {
       const secondsLeft = Math.ceil(
-        (RESEND_COOLDOWN_MS - (now - lastSent)) / 1000
+        (RESEND_COOLDOWN_MS - (now - lastSent)) / 1000,
       );
       throw new Error(`COOLDOWN_${secondsLeft}`);
     }
@@ -109,4 +113,73 @@ export async function resendOtp(userId: string) {
   // No valid OTP → generate new
   const otp = await generateOtp(userId);
   await sendOtpEmail(user.email, otp.code);
+}
+
+export async function verifyResetOtp(email: string, code: string) {
+  const user = await prisma.user.findUnique({
+    where: { email: email.toLowerCase() },
+  });
+
+  if (!user) throw new Error("INVALID_OTP");
+
+  const otp = await prisma.otp.findFirst({
+    where: {
+      userId: user.id,
+      code,
+      purpose: "RESET_PASSWORD",
+      expiresAt: { gt: new Date() },
+    },
+  });
+
+  if (!otp) throw new Error("INVALID_OTP");
+
+  return { userId: user.id };
+}
+
+export async function resendForgotPasswordOtp(email: string) {
+  const user = await prisma.user.findUnique({
+    where: { email: email.toLowerCase() },
+  });
+
+  // ✅ Always return success (anti-enumeration)
+  if (!user) return;
+
+  // ⏱ Rate limit (60s)
+  const lastOtp = await prisma.otp.findFirst({
+    where: {
+      userId: user.id,
+      purpose: "RESET_PASSWORD",
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (lastOtp && Date.now() - lastOtp.lastSentAt.getTime() < 60_000) {
+    throw new Error("OTP_TOO_SOON");
+  }
+
+  // ❌ Invalidate previous OTPs
+  await prisma.otp.updateMany({
+    where: {
+      userId: user.id,
+      purpose: "RESET_PASSWORD",
+      used: false,
+    },
+    data: { used: true },
+  });
+
+  // ✅ Create new OTP
+  const code = generateCode();
+
+  await prisma.otp.create({
+    data: {
+      userId: user.id,
+      code,
+      purpose: "RESET_PASSWORD",
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      lastSentAt: new Date(),
+    },
+  });
+
+  // 📧 Send email
+  await sendOtpEmail(user.email, code);
 }

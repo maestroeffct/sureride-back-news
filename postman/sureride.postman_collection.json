@@ -1,0 +1,1550 @@
+{
+  "info": {
+    "_postman_id": "3f0b9a2b-6f8b-4d7a-9f16-8d8b4f1a3b6a",
+    "name": "SureRide Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "carId",
+      "value": ""
+    },
+    {
+      "key": "insuranceId",
+      "value": ""
+    },
+    {
+      "key": "pickupLocationId",
+      "value": ""
+    },
+    {
+      "key": "dropoffLocationId",
+      "value": ""
+    },
+    {
+      "key": "countryCode",
+      "value": "NG"
+    },
+    {
+      "key": "countryId",
+      "value": ""
+    },
+    {
+      "key": "locationQuery",
+      "value": "Ikeja"
+    },
+    {
+      "key": "featureId",
+      "value": ""
+    },
+    {
+      "key": "featureIds",
+      "value": "[\"{{featureId}}\"]"
+    },
+    {
+      "key": "stripeSignature",
+      "value": "t=123,v1=test_signature"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"ok\": true,\n  \"message\": \"SureRide API running\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+2348123456789\",\n  \"country\": \"Nigeria\",\n  \"dob\": \"1995-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created Example",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Account created successfully\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"token\": \"<jwt>\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\",\n    \"firstName\": \"John\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Account verified successfully\",\n  \"token\": \"<jwt>\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/resend-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "resend-otp"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Verification code sent\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Authenticated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"dateOfBirth\": \"1995-01-01T00:00:00.000Z\",\n    \"nationality\": \"Nigeria\",\n    \"phoneCountry\": \"+234\",\n    \"phoneNumber\": \"8123456789\",\n    \"isVerified\": true,\n    \"isActive\": true,\n    \"profileStatus\": \"PENDING_VERIFICATION\",\n    \"createdAt\": \"2026-03-02T12:00:00.000Z\",\n    \"updatedAt\": \"2026-03-02T12:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"If the email exists, a verification code has been sent\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Reset OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-reset-otp",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-reset-otp"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"OTP verified\",\n  \"userId\": \"user_123\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"NewPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Password reset successful\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password Resend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password/resend",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password",
+                "resend"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Verification code resent to your email\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "KYC",
+      "item": [
+        {
+          "name": "Save Personal Info",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"dateOfBirth\": \"1995-01-01\",\n  \"nationality\": \"Nigeria\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kyc/personal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyc",
+                "personal"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Personal info saved\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Save Address Info",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"state\": \"Lagos\",\n  \"region\": \"Ikeja\",\n  \"homeAddress\": \"12 Example Street\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kyc/address",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyc",
+                "address"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Address saved\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Documents",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "passport",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "govFront",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "govBack",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "licenseFront",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "licenseBack",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/kyc/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyc",
+                "documents"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Documents uploaded\",\n  \"profileStatus\": \"PENDING_VERIFICATION\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rental",
+      "item": [
+        {
+          "name": "Search Cars",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rental/search?pickupLocationId={{pickupLocationId}}&dropoffLocationId={{dropoffLocationId}}&pickupAt=2026-02-06T10:00:00Z&returnAt=2026-02-07T10:00:00Z&countryCode={{countryCode}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rental",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "pickupLocationId",
+                  "value": "{{pickupLocationId}}"
+                },
+                {
+                  "key": "dropoffLocationId",
+                  "value": "{{dropoffLocationId}}"
+                },
+                {
+                  "key": "pickupAt",
+                  "value": "2026-02-06T10:00:00Z"
+                },
+                {
+                  "key": "returnAt",
+                  "value": "2026-02-07T10:00:00Z"
+                },
+                {
+                  "key": "countryCode",
+                  "value": "{{countryCode}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"search\": {\n    \"pickupAt\": \"2026-02-06T10:00:00Z\",\n    \"returnAt\": \"2026-02-07T10:00:00Z\",\n    \"countryCode\": \"NG\"\n  },\n  \"total\": 1,\n  \"cars\": [\n    {\n      \"id\": \"car_123\",\n      \"brand\": \"Toyota\",\n      \"model\": \"Corolla\",\n      \"dailyRate\": 25000,\n      \"provider\": {\n        \"id\": \"prov_1\",\n        \"name\": \"SureRide Rentals\"\n      },\n      \"location\": {\n        \"id\": \"loc_1\",\n        \"name\": \"Ikeja City Mall\"\n      },\n      \"images\": [\n        {\n          \"id\": \"img_1\",\n          \"url\": \"https://example.com/car.jpg\",\n          \"isPrimary\": true\n        }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rental/locations/search?q={{locationQuery}}&countryId={{countryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rental",
+                "locations",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{locationQuery}}"
+                },
+                {
+                  "key": "countryId",
+                  "value": "{{countryId}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\",\n    \"address\": \"Ikeja, Lagos\",\n    \"countryId\": \"country_ng\",\n    \"providerId\": \"prov_1\",\n    \"country\": {\n      \"id\": \"country_ng\",\n      \"name\": \"Nigeria\",\n      \"code\": \"NG\"\n    },\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    }\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "List Cars",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rental/cars",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rental",
+                "cars"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"car_123\",\n    \"brand\": \"Toyota\",\n    \"model\": \"Corolla\",\n    \"category\": \"ECONOMY\",\n    \"year\": 2022,\n    \"dailyRate\": 25000,\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    },\n    \"location\": {\n      \"id\": \"loc_1\",\n      \"name\": \"Ikeja City Mall\"\n    },\n    \"images\": [\n      {\n        \"id\": \"img_1\",\n        \"url\": \"https://example.com/cars/corolla.jpg\",\n        \"isPrimary\": true\n      }\n    ]\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "List Locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rental/locations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "rental",
+                "locations"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\",\n    \"address\": \"Ikeja, Lagos\",\n    \"country\": {\n      \"id\": \"country_ng\",\n      \"name\": \"Nigeria\",\n      \"code\": \"NG\"\n    },\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    }\n  }\n]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "item": [
+        {
+          "name": "Pricing Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"insuranceId\": \"{{insuranceId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pricing/pricing-preview",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pricing",
+                "pricing-preview"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Price calculated\",\n  \"data\": {\n    \"rentalDays\": 1,\n    \"basePrice\": 25000,\n    \"insuranceFee\": 2000,\n    \"totalPrice\": 27000\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"pickupLocationId\": \"{{pickupLocationId}}\",\n  \"dropoffLocationId\": \"{{dropoffLocationId}}\",\n  \"insuranceId\": \"{{insuranceId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Booking created successfully\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"PENDING\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings?status=IN_PROGRESS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "IN_PROGRESS"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"book_123\",\n    \"status\": \"PENDING\",\n    \"car\": {\n      \"id\": \"car_123\",\n      \"brand\": \"Toyota\",\n      \"model\": \"Corolla\"\n    }\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Booking Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"book_123\",\n  \"pickupCode\": \"BOOK1234\",\n  \"status\": \"PENDING\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings",
+                "{{bookingId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Booking cancelled successfully\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"CANCELLED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Confirm Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings",
+                "{{bookingId}}",
+                "confirm"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Booking confirmed\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"CONFIRMED\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Features",
+      "item": [
+        {
+          "name": "Create Global Feature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\",\n  \"icon\": \"gps\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/features",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "features"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created Example",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"feat_global_1\",\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\",\n  \"icon\": \"gps\",\n  \"providerId\": null,\n  \"isActive\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Provider Feature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"child-seat\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/provider/features",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "provider",
+                "features"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Created Example",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"feat_provider_1\",\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"child-seat\",\n  \"providerId\": \"prov_1\",\n  \"isActive\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Provider Features",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/provider/features",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "provider",
+                "features"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"feat_global_1\",\n    \"name\": \"GPS\",\n    \"category\": \"COMFORT\",\n    \"providerId\": null,\n    \"isActive\": true\n  },\n  {\n    \"id\": \"feat_provider_1\",\n    \"name\": \"Child Seat\",\n    \"category\": \"SAFETY\",\n    \"providerId\": \"prov_1\",\n    \"isActive\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Attach Features To Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"featureIds\": {{featureIds}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/provider/cars/{{carId}}/features",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "provider",
+                "cars",
+                "{{carId}}",
+                "features"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Features attached successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Car With Features",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cars/{{carId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "{{carId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"car_123\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"groupedFeatures\": {\n    \"COMFORT\": [\n      {\n        \"id\": \"feat_global_1\",\n        \"name\": \"GPS\",\n        \"icon\": \"gps\"\n      }\n    ],\n    \"SAFETY\": [\n      {\n        \"id\": \"feat_provider_1\",\n        \"name\": \"Child Seat\",\n        \"icon\": \"child-seat\"\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get Payment Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payments/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "config"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"provider\": \"STRIPE\",\n  \"publishableKey\": \"pk_test_xxx\",\n  \"merchantDisplayName\": \"SureRide\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Payment Sheet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/payment-sheet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "payment-sheet"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "OK Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"provider\": \"STRIPE\",\n  \"bookingId\": \"book_123\",\n  \"amount\": 2700000,\n  \"currency\": \"ngn\",\n  \"paymentIntentClientSecret\": \"pi_xxx_secret_xxx\",\n  \"publishableKey\": \"pk_test_xxx\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Stripe Webhook (Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "{{stripeSignature}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"evt_test_webhook\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_test\",\n      \"object\": \"payment_intent\",\n      \"metadata\": {\n        \"bookingId\": \"{{bookingId}}\"\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/webhook/stripe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "webhook",
+                "stripe"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Processed Example",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"received\": true,\n  \"processed\": true,\n  \"bookingId\": \"book_123\",\n  \"paymentStatus\": \"SUCCEEDED\",\n  \"eventType\": \"payment_intent.succeeded\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

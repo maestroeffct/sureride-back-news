@@ -94,6 +94,7 @@ export async function loginUser(email: string, password: string) {
 
   // ✅ Verified → issue JWT
   const token = signToken({
+    type: "USER",
     userId: user.id,
     email: user.email,
     sessionId: session.id,

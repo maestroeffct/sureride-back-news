@@ -134,6 +134,10 @@ async function fetchBookingDetails(userId, bookingId) {
             insuranceFee: booking.insuranceFee,
             totalPrice: booking.totalPrice,
             pricingUnit: booking.pricingUnit,
+            status: booking.paymentStatus,
+            provider: booking.paymentProvider,
+            reference: booking.paymentReference,
+            paidAt: booking.paidAt,
         },
         status: booking.status,
     };
@@ -172,6 +176,9 @@ async function confirmUserBooking(bookingId) {
     }
     if (booking.status !== "PENDING") {
         throw new Error("Booking already processed");
+    }
+    if (booking.paymentStatus !== "SUCCEEDED") {
+        throw new Error("PAYMENT_NOT_COMPLETED");
     }
     return prisma_1.prisma.booking.update({
         where: { id: bookingId },

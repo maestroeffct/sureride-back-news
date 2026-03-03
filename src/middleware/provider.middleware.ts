@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
 import { prisma } from "../prisma";
 
-export async function requireAuth(
+export async function requireProviderAuth(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -17,11 +17,15 @@ export async function requireAuth(
     const token = authHeader.split(" ")[1];
     const payload = verifyToken(token);
 
-    if (payload.type !== "USER" || !payload.userId || !payload.sessionId) {
-      return res.status(401).json({ message: "Invalid user token" });
+    if (
+      payload.type !== "PROVIDER" ||
+      !payload.sessionId ||
+      !payload.providerId
+    ) {
+      return res.status(401).json({ message: "Invalid provider token" });
     }
 
-    const session = await prisma.session.findUnique({
+    const session = await prisma.providerSession.findUnique({
       where: { id: payload.sessionId },
     });
 

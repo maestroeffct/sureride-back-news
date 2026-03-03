@@ -110,6 +110,9 @@ async function confirmBooking(req, res) {
         });
     }
     catch (error) {
+        if (error.message === "PAYMENT_NOT_COMPLETED") {
+            return res.status(400).json({ message: "Payment not completed" });
+        }
         return res.status(400).json({ message: error.message });
     }
 }

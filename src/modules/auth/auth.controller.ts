@@ -132,17 +132,30 @@ export async function verifyOtpHandler(req: Request, res: Response) {
       where: { id: userId },
     });
 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const session = await prisma.session.create({
+      data: {
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
     const token = signToken({
-      userId: user!.id,
-      email: user!.email,
+      type: "USER",
+      sessionId: session.id,
+      userId: user.id,
+      email: user.email,
     });
 
     return res.json({
       message: "Account verified successfully",
       token,
       user: {
-        id: user!.id,
-        email: user!.email,
+        id: user.id,
+        email: user.email,
       },
     });
   } catch (err: any) {
@@ -260,11 +273,16 @@ export async function resetPasswordHandler(req: Request, res: Response) {
 }
 
 export async function logout(req: Request, res: Response) {
-  const { userId, sessionId } = req.user!;
-  if (!sessionId) {
-    return res.status(400).json({ message: "sessionId is required" });
+  const payload = req.user;
+  if (
+    !payload ||
+    payload.type !== "USER" ||
+    !payload.userId ||
+    !payload.sessionId
+  ) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
-  await logoutUser(userId, sessionId);
+  await logoutUser(payload.userId, payload.sessionId);
 
   return res.json({ message: "Logged out successfully" });
 }

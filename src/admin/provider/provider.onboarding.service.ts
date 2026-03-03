@@ -147,6 +147,10 @@ async function getProviderSummaryById(providerId: string) {
   return toProviderSummary(provider);
 }
 
+export async function getProviderById(providerId: string) {
+  return getProviderSummaryById(providerId);
+}
+
 /**
  * Step 1: Save Draft Provider
  */

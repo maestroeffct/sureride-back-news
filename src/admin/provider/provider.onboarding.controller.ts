@@ -3,6 +3,7 @@ import {
   createOrUpdateDraftProvider,
   submitProvider,
   listProviders,
+  getProviderById,
 } from "./provider.onboarding.service";
 
 function getSingleParam(value: string | string[] | undefined) {
@@ -67,5 +68,24 @@ export async function getProviders(req: Request, res: Response) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Failed to fetch providers" });
+  }
+}
+
+export async function getProvider(req: Request, res: Response) {
+  try {
+    const providerId = getSingleParam(req.params.providerId);
+
+    if (!providerId) {
+      return res.status(400).json({ message: "providerId is required" });
+    }
+
+    const provider = await getProviderById(providerId);
+    return res.json(provider);
+  } catch (err: any) {
+    if (err.message === "PROVIDER_NOT_FOUND") {
+      return res.status(404).json({ message: "Provider not found" });
+    }
+
+    return res.status(400).json({ message: err.message });
   }
 }

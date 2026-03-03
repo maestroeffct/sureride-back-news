@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_providerDocs_controller_1 = require("./admin.providerDocs.controller");
+const router = (0, express_1.Router)();
+router.get("/providers/:providerId/documents", admin_middleware_1.requireAdminAuth, admin_providerDocs_controller_1.adminListProviderDocs);
+router.patch("/provider-docs/:docId/approve", admin_middleware_1.requireAdminAuth, admin_providerDocs_controller_1.adminApproveDoc);
+router.patch("/provider-docs/:docId/reject", admin_middleware_1.requireAdminAuth, admin_providerDocs_controller_1.adminRejectDoc);
+exports.default = router;

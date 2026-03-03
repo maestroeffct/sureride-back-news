@@ -24,6 +24,21 @@ export async function loginProvider(req: Request, res: Response) {
       });
     }
 
+    if (
+      err.message === "PROVIDER_PENDING_APPROVAL" ||
+      err.message === "PROVIDER_ACCOUNT_NOT_READY"
+    ) {
+      return res.status(403).json({
+        message: "Provider account is awaiting admin approval",
+      });
+    }
+
+    if (err.message === "PROVIDER_SUSPENDED") {
+      return res.status(403).json({
+        message: "Provider account is suspended",
+      });
+    }
+
     if (err.message === "PROVIDER_NOT_VERIFIED") {
       return res.status(403).json({
         message: "Provider account not verified yet",

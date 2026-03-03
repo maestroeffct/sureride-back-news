@@ -17,6 +17,11 @@ const payment_controller_1 = require("./modules/payments/payment.controller");
 const admin_auth_routes_1 = __importDefault(require("./admin/admin.auth.routes"));
 const provider_auth_routes_1 = __importDefault(require("./modules/provider/provider.auth.routes"));
 const provider_onboarding_routes_1 = __importDefault(require("./admin/provider/provider.onboarding.routes"));
+const admin_providers_routes_1 = __importDefault(require("./admin/provider/admin.providers.routes"));
+const admin_providerDocs_routes_1 = __importDefault(require("./admin/provider/admin.providerDocs.routes"));
+const admin_payout_routes_1 = __importDefault(require("./admin/payout/admin.payout.routes"));
+const provider_request_routes_1 = __importDefault(require("./modules/provider-request/provider-request.routes"));
+const admin_provider_requests_routes_1 = __importDefault(require("./admin/provider-requests/admin.provider-requests.routes"));
 const app = (0, express_1.default)();
 const allowedOrigins = ["http://localhost:3000"];
 const corsOptions = {
@@ -43,9 +48,14 @@ app.use("/kyc", kyc_routes_1.default);
 app.use("/rental/locations", location_routes_1.default);
 app.use("/api", feature_routes_1.default);
 app.use("/payments", payment_routes_1.default);
+app.use("/", provider_request_routes_1.default);
 // ✅ admin
 app.use("/admin/auth", admin_auth_routes_1.default);
 // ✅ provider
 app.use("/provider/auth", provider_auth_routes_1.default);
 app.use("/admin", provider_onboarding_routes_1.default);
+app.use("/admin", admin_providers_routes_1.default);
+app.use("/admin", admin_providerDocs_routes_1.default);
+app.use("/admin", admin_payout_routes_1.default);
+app.use("/admin", admin_provider_requests_routes_1.default);
 exports.default = app;

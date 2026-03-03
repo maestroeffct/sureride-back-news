@@ -7,12 +7,26 @@ export async function providerLogin(email: string, password: string) {
     where: { email: email.toLowerCase() },
   });
 
-  if (!provider || !provider.isActive) {
+  if (!provider) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
+  if (!provider.password) {
+    throw new Error("PROVIDER_ACCOUNT_NOT_READY");
+  }
+
   const ok = await bcrypt.compare(password, provider.password);
-  if (!ok) throw new Error("INVALID_CREDENTIALS");
+  if (!ok) {
+    throw new Error("INVALID_CREDENTIALS");
+  }
+
+  if (provider.status === "SUSPENDED" || !provider.isActive) {
+    throw new Error("PROVIDER_SUSPENDED");
+  }
+
+  if (provider.status !== "ACTIVE") {
+    throw new Error("PROVIDER_PENDING_APPROVAL");
+  }
 
   if (!provider.isVerified) {
     throw new Error("PROVIDER_NOT_VERIFIED");
@@ -40,6 +54,7 @@ export async function providerLogin(email: string, password: string) {
       id: provider.id,
       name: provider.name,
       email: provider.email,
+      status: provider.status,
     },
   };
 }

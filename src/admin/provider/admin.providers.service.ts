@@ -1,18 +1,88 @@
+import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { prisma } from "../../prisma";
 
+const adminProviderSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  contactPersonName: true,
+  contactPersonRole: true,
+  contactPersonPhone: true,
+  status: true,
+  commissionRate: true,
+  isVerified: true,
+  isActive: true,
+  createdBy: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 export async function approveProvider(providerId: string) {
-  return prisma.rentalProvider.update({
+  const existing = await prisma.rentalProvider.findUnique({
     where: { id: providerId },
-    data: { status: "ACTIVE", isVerified: true, isActive: true },
+    select: {
+      id: true,
+      password: true,
+    },
   });
+
+  if (!existing) {
+    throw new Error("PROVIDER_NOT_FOUND");
+  }
+
+  let generatedPassword: string | null = null;
+  const updateData: {
+    status: "ACTIVE";
+    isVerified: boolean;
+    isActive: boolean;
+    password?: string;
+  } = {
+    status: "ACTIVE",
+    isVerified: true,
+    isActive: true,
+  };
+
+  if (!existing.password) {
+    generatedPassword = randomBytes(6).toString("hex");
+    updateData.password = await bcrypt.hash(generatedPassword, 10);
+  }
+
+  const provider = await prisma.rentalProvider.update({
+    where: { id: providerId },
+    data: updateData,
+    select: adminProviderSelect,
+  });
+
+  if (generatedPassword) {
+    // TODO: replace with mailer integration.
+    console.log("Send approved provider credentials:", {
+      email: provider.email,
+      password: generatedPassword,
+    });
+  }
+
+  return provider;
 }
 
-export async function suspendProvider(providerId: string, reason?: string) {
-  // optional: store reason somewhere (audit table later)
-  return prisma.rentalProvider.update({
-    where: { id: providerId },
-    data: { status: "SUSPENDED", isActive: false },
-  });
+export async function suspendProvider(providerId: string, _reason?: string) {
+  const [provider] = await prisma.$transaction([
+    prisma.rentalProvider.update({
+      where: { id: providerId },
+      data: { status: "SUSPENDED", isActive: false },
+      select: adminProviderSelect,
+    }),
+    prisma.providerSession.updateMany({
+      where: {
+        providerId,
+        isActive: true,
+      },
+      data: { isActive: false },
+    }),
+  ]);
+
+  return provider;
 }
 
 export async function setProviderCommission(
@@ -20,11 +90,12 @@ export async function setProviderCommission(
   commissionRate: number,
 ) {
   if (commissionRate < 0 || commissionRate > 1) {
-    throw new Error("COMMISSION_RATE_INVALID"); // expects 0..1
+    throw new Error("COMMISSION_RATE_INVALID");
   }
 
   return prisma.rentalProvider.update({
     where: { id: providerId },
     data: { commissionRate },
+    select: adminProviderSelect,
   });
 }

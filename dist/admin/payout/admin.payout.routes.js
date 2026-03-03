@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_payout_controller_1 = require("./admin.payout.controller");
+const router = (0, express_1.Router)();
+router.put("/providers/:providerId/payout-account", admin_middleware_1.requireAdminAuth, admin_payout_controller_1.adminUpsertPayoutAccount);
+router.post("/providers/:providerId/payouts", admin_middleware_1.requireAdminAuth, admin_payout_controller_1.adminCreatePayout);
+router.patch("/payouts/:payoutId/paid", admin_middleware_1.requireAdminAuth, admin_payout_controller_1.adminMarkPayoutPaid);
+exports.default = router;

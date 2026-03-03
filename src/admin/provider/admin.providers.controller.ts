@@ -1,0 +1,41 @@
+import { Request, Response } from "express";
+import {
+  approveProvider,
+  suspendProvider,
+  setProviderCommission,
+} from "./admin.providers.service";
+
+export async function adminApproveProvider(req: Request, res: Response) {
+  try {
+    const { providerId } = req.params;
+    const provider = await approveProvider(providerId);
+    return res.json({ message: "Provider approved", provider });
+  } catch (e: any) {
+    return res.status(400).json({ message: e.message });
+  }
+}
+
+export async function adminSuspendProvider(req: Request, res: Response) {
+  try {
+    const { providerId } = req.params;
+    const { reason } = req.body;
+    const provider = await suspendProvider(providerId, reason);
+    return res.json({ message: "Provider suspended", provider });
+  } catch (e: any) {
+    return res.status(400).json({ message: e.message });
+  }
+}
+
+export async function adminSetCommission(req: Request, res: Response) {
+  try {
+    const { providerId } = req.params;
+    const { commissionRate } = req.body;
+    const provider = await setProviderCommission(
+      providerId,
+      Number(commissionRate),
+    );
+    return res.json({ message: "Commission updated", provider });
+  } catch (e: any) {
+    return res.status(400).json({ message: e.message });
+  }
+}

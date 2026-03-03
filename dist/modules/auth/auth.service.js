@@ -77,6 +77,7 @@ async function loginUser(email, password) {
     });
     // ✅ Verified → issue JWT
     const token = (0, jwt_1.signToken)({
+        type: "USER",
         userId: user.id,
         email: user.email,
         sessionId: session.id,

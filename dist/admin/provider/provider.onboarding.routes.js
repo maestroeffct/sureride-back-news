@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const provider_onboarding_controller_1 = require("./provider.onboarding.controller");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const router = (0, express_1.Router)();
+router.get("/providers", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.getProviders);
+router.post("/providers/draft", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.saveDraftProvider);
+router.patch("/providers/:providerId/submit", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.finalizeProvider);
+exports.default = router;

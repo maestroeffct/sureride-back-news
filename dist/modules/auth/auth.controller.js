@@ -111,7 +111,18 @@ async function verifyOtpHandler(req, res) {
         const user = await prisma_1.prisma.user.findUnique({
             where: { id: userId },
         });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const session = await prisma_1.prisma.session.create({
+            data: {
+                userId: user.id,
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+        });
         const token = (0, jwt_1.signToken)({
+            type: "USER",
+            sessionId: session.id,
             userId: user.id,
             email: user.email,
         });
@@ -217,11 +228,14 @@ async function resetPasswordHandler(req, res) {
     });
 }
 async function logout(req, res) {
-    const { userId, sessionId } = req.user;
-    if (!sessionId) {
-        return res.status(400).json({ message: "sessionId is required" });
+    const payload = req.user;
+    if (!payload ||
+        payload.type !== "USER" ||
+        !payload.userId ||
+        !payload.sessionId) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    await (0, auth_service_1.logoutUser)(userId, sessionId);
+    await (0, auth_service_1.logoutUser)(payload.userId, payload.sessionId);
     return res.json({ message: "Logged out successfully" });
 }
 async function resendForgotPassword(req, res) {

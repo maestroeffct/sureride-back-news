@@ -11,6 +11,9 @@ async function requireAuth(req, res, next) {
     try {
         const token = authHeader.split(" ")[1];
         const payload = (0, jwt_1.verifyToken)(token);
+        if (payload.type !== "USER" || !payload.userId || !payload.sessionId) {
+            return res.status(401).json({ message: "Invalid user token" });
+        }
         const session = await prisma_1.prisma.session.findUnique({
             where: { id: payload.sessionId },
         });

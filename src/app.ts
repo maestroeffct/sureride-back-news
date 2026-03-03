@@ -11,6 +11,12 @@ import paymentRoutes from "./modules/payments/payment.routes";
 import { stripeWebhookController } from "./modules/payments/payment.controller";
 import adminAuthRoutes from "./admin/admin.auth.routes";
 import providerAuthRoutes from "./modules/provider/provider.auth.routes";
+import providerOnboardingRoutes from "./admin/provider/provider.onboarding.routes";
+import adminProvidersRoutes from "./admin/provider/admin.providers.routes";
+import adminProviderDocsRoutes from "./admin/provider/admin.providerDocs.routes";
+import adminPayoutRoutes from "./admin/payout/admin.payout.routes";
+import providerRequestRoutes from "./modules/provider-request/provider-request.routes";
+import adminProviderRequestRoutes from "./admin/provider-requests/admin.provider-requests.routes";
 
 const app = express();
 
@@ -49,11 +55,18 @@ app.use("/kyc", kycRoutes);
 app.use("/rental/locations", locationRoutes);
 app.use("/api", featureRoutes);
 app.use("/payments", paymentRoutes);
-
+app.use("/", providerRequestRoutes);
 // ✅ admin
 app.use("/admin/auth", adminAuthRoutes);
 
 // ✅ provider
 app.use("/provider/auth", providerAuthRoutes);
+
+app.use("/admin", providerOnboardingRoutes);
+
+app.use("/admin", adminProvidersRoutes);
+app.use("/admin", adminProviderDocsRoutes);
+app.use("/admin", adminPayoutRoutes);
+app.use("/admin", adminProviderRequestRoutes);
 
 export default app;

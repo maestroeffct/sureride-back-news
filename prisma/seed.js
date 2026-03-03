@@ -8,6 +8,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = require("../src/prisma");
 async function main() {
     const now = new Date();
+    const defaultPasswordHash = await bcryptjs_1.default.hash("Password123!", 10);
     // 1️⃣ Country
     const nigeria = await prisma_1.prisma.country.upsert({
         where: { code: "NG" },
@@ -25,6 +26,7 @@ async function main() {
             name: "SureRide Rentals",
             logoUrl: "https://example.com/logo.png",
             phone: "+2348012345678",
+            password: defaultPasswordHash,
             isVerified: true,
             isActive: true,
         },
@@ -32,8 +34,25 @@ async function main() {
             name: "SureRide Rentals",
             logoUrl: "https://example.com/logo.png",
             email: providerEmail,
+            password: defaultPasswordHash,
             phone: "+2348012345678",
             isVerified: true,
+            isActive: true,
+        },
+    });
+    // 2️⃣b Admin
+    const adminEmail = "admin@sureride.com";
+    const admin = await prisma_1.prisma.admin.upsert({
+        where: { email: adminEmail },
+        update: {
+            password: defaultPasswordHash,
+            role: "SUPER_ADMIN",
+            isActive: true,
+        },
+        create: {
+            email: adminEmail,
+            password: defaultPasswordHash,
+            role: "SUPER_ADMIN",
             isActive: true,
         },
     });
@@ -193,7 +212,7 @@ async function main() {
         }
     }
     // 6️⃣ Users
-    const passwordHash = await bcryptjs_1.default.hash("Password123!", 10);
+    const passwordHash = defaultPasswordHash;
     const verifiedUser = await prisma_1.prisma.user.upsert({
         where: { email: "verified@sureride.com" },
         update: {
@@ -436,6 +455,7 @@ async function main() {
             });
         })();
     console.log("✅ Seed complete");
+    console.log("Admin:", admin.email, "Password123!", "role", admin.role);
     console.log("Verified user:", verifiedUser.email, "Password123!");
     console.log("Unverified user:", unverifiedUser.email, "Password123!", "OTP 1234");
     console.log("Provider insurance id:", providerInsurance.id);

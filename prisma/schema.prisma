@@ -178,28 +178,116 @@ model Booking {
 }
 
 model RentalProvider {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
 
-  name    String
-  logoUrl String?
+  name      String
+  logoUrl   String?
 
-  email String @unique
-  password String
+  email     String   @unique
+  password  String
 
-  phone String?
+  phone     String?
+
+  contactPersonName String?
+  contactPersonRole String?
+  contactPersonPhone String?
+
+  businessAddress String?
+  countryId String?
+
+  bankName String?
+  bankAccountNumber String?
+  bankAccountName String?
+
+  status ProviderStatus @default(DRAFT)
+
+  // COMMISSION
+  commissionRate Float? // e.g 0.12 => 12%, null => use global default
 
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)
 
   createdBy ProviderSource @default(SURERIDE_ADMIN)
 
-  locations         Location[]
-  cars              Car[]
+  locations  Location[]
+  cars       Car[]
   insurancePackages InsurancePackage[]
-  features          Feature[]
   sessions   ProviderSession[]
+  features Feature[]
+  documents          ProviderDocument[]
+  payoutAccount      ProviderPayoutAccount?
+  payouts            ProviderPayout[]
+
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProviderDocument {
+  id          String   @id @default(uuid())
+  providerId  String
+
+  type        ProviderDocType
+  url         String
+  status      VerificationStatus @default(PENDING)
+  rejectionReason String?
+
+  provider    RentalProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([providerId])
+}
+
+model ProviderRequest {
+  id        String   @id @default(uuid())
+
+  businessName String
+  email        String
+  phone        String?
+
+  status       ProviderRequestStatus @default(PENDING)
+  adminNote    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProviderPayoutAccount {
+  id         String @id @default(uuid())
+  providerId String @unique
+
+  bankName   String
+  accountNumber String
+  accountName   String
+  currency   String @default("NGN")
+
+  isVerified Boolean @default(false)
+
+  provider   RentalProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProviderPayout {
+  id         String @id @default(uuid())
+  providerId String
+
+  amount     Float
+  currency   String @default("NGN")
+  status     PayoutStatus @default(PENDING)
+
+  reference  String? // Paystack/Stripe payout ref later
+  note       String?
+
+  provider   RentalProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
 }
 
 model ProviderSession {
@@ -407,4 +495,37 @@ enum ProfileStatus {
   PENDING_VERIFICATION
   VERIFIED
   REJECTED
+}
+
+enum ProviderStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  SUSPENDED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProviderDocType {
+  CAC
+  NIN
+  ID_CARD
+  ADDRESS_PROOF
+}
+
+enum ProviderRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
 }

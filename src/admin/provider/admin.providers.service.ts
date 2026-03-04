@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 import { prisma } from "../../prisma";
+import { notifyProviderApproved } from "../../utils/provider-notifications";
 
 const adminProviderSelect = {
   id: true,
@@ -55,11 +56,15 @@ export async function approveProvider(providerId: string) {
     select: adminProviderSelect,
   });
 
+  await notifyProviderApproved({
+    name: provider.name,
+    email: provider.email,
+    temporaryPassword: generatedPassword ?? undefined,
+  });
+
   if (generatedPassword) {
-    // TODO: replace with mailer integration.
-    console.log("Send approved provider credentials:", {
+    console.log("Generated temporary provider password for approval:", {
       email: provider.email,
-      password: generatedPassword,
     });
   }
 

@@ -1,5 +1,6 @@
 import { ProviderSource, ProviderStatus } from "@prisma/client";
 import { prisma } from "../../prisma";
+import { notifyProviderSubmission } from "../../utils/provider-notifications";
 
 type ProviderDraftPayload = {
   id?: string;
@@ -239,7 +240,16 @@ export async function submitProvider(providerId: string) {
     },
   });
 
-  return getProviderSummaryById(providerId);
+  const summary = await getProviderSummaryById(providerId);
+
+  await notifyProviderSubmission({
+    name: summary.name,
+    email: summary.email,
+    phone: summary.phone,
+    source: "ONBOARDING",
+  });
+
+  return summary;
 }
 
 /**

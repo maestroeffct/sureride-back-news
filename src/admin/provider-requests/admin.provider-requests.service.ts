@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { ProviderRequestStatus } from "@prisma/client";
 import { randomBytes } from "crypto";
 import { prisma } from "../../prisma";
+import { notifyProviderApproved } from "../../utils/provider-notifications";
 
 type ListProviderRequestsParams = {
   q?: string;
@@ -119,10 +120,10 @@ export async function approveProviderRequest(requestId: string) {
     data: { status: "APPROVED" },
   });
 
-  // TODO: replace with mailer integration.
-  console.log("Send provider login credentials:", {
-    email: request.email,
-    password: rawPassword,
+  await notifyProviderApproved({
+    name: provider.name,
+    email: provider.email,
+    temporaryPassword: rawPassword,
   });
 
   return provider;

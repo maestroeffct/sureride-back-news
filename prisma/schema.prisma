@@ -128,6 +128,10 @@ model Car {
   dailyRate  Float
   hourlyRate Float?
 
+  status        CarStatus @default(DRAFT)
+  moderationNote String?
+  flaggedReason  String?
+
   isActive Boolean @default(true)
 
   providerId String
@@ -528,4 +532,12 @@ enum PayoutStatus {
   PROCESSING
   PAID
   FAILED
+}
+
+enum CarStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  FLAGGED
 }

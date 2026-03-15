@@ -17,6 +17,9 @@ import adminProviderDocsRoutes from "./admin/provider/admin.providerDocs.routes"
 import adminPayoutRoutes from "./admin/payout/admin.payout.routes";
 import providerRequestRoutes from "./modules/provider-request/provider-request.routes";
 import adminProviderRequestRoutes from "./admin/provider-requests/admin.provider-requests.routes";
+import providerCarsRoutes from "./modules/provider/cars/provider.cars.routes";
+import usersRoutes from "./modules/users/users.routes";
+import adminUsersRoutes from "./admin/users/admin.users.routes";
 
 const app = express();
 
@@ -55,12 +58,14 @@ app.use("/kyc", kycRoutes);
 app.use("/rental/locations", locationRoutes);
 app.use("/api", featureRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/users", usersRoutes);
 app.use("/", providerRequestRoutes);
 // ✅ admin
 app.use("/admin/auth", adminAuthRoutes);
 
 // ✅ provider
 app.use("/provider/auth", providerAuthRoutes);
+app.use("/provider", providerCarsRoutes);
 
 app.use("/admin", providerOnboardingRoutes);
 
@@ -68,5 +73,6 @@ app.use("/admin", adminProvidersRoutes);
 app.use("/admin", adminProviderDocsRoutes);
 app.use("/admin", adminPayoutRoutes);
 app.use("/admin", adminProviderRequestRoutes);
+app.use("/admin", adminUsersRoutes);
 
 export default app;

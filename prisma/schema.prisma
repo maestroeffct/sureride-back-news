@@ -24,6 +24,8 @@ model User {
 
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)
+  mustChangePassword Boolean @default(false)
+  tempPasswordExpiresAt DateTime?
 
   profileStatus ProfileStatus @default(INCOMPLETE)
 

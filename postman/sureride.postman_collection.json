@@ -2,7 +2,8 @@
   "info": {
     "_postman_id": "3f0b9a2b-6f8b-4d7a-9f16-8d8b4f1a3b6a",
     "name": "SureRide Backend API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Updated docs for user, provider, admin, payments, and rental flows."
   },
   "variable": [
     {
@@ -11,6 +12,14 @@
     },
     {
       "key": "token",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "providerToken",
       "value": ""
     },
     {
@@ -26,7 +35,27 @@
       "value": ""
     },
     {
-      "key": "insuranceId",
+      "key": "imageId",
+      "value": ""
+    },
+    {
+      "key": "featureId",
+      "value": ""
+    },
+    {
+      "key": "providerId",
+      "value": ""
+    },
+    {
+      "key": "providerRequestId",
+      "value": ""
+    },
+    {
+      "key": "docId",
+      "value": ""
+    },
+    {
+      "key": "payoutId",
       "value": ""
     },
     {
@@ -50,14 +79,6 @@
       "value": "Ikeja"
     },
     {
-      "key": "featureId",
-      "value": ""
-    },
-    {
-      "key": "featureIds",
-      "value": "[\"{{featureId}}\"]"
-    },
-    {
       "key": "stripeSignature",
       "value": "t=123,v1=test_signature"
     }
@@ -72,18 +93,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                ""
-              ]
+              "raw": "{{baseUrl}}/"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -113,6 +135,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+2348123456789\",\n  \"country\": \"Nigeria\",\n  \"dob\": \"1995-01-01\"\n}",
@@ -121,21 +146,32 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
             }
           },
           "response": [
             {
-              "name": "Created Example",
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+2348123456789\",\n  \"country\": \"Nigeria\",\n  \"dob\": \"1995-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -160,6 +196,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}",
@@ -168,16 +207,67 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": [
-                "{{baseUrl}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
-              "path": [
-                "auth",
-                "login"
-              ]
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"token\": \"<jwt>\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Temporary Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-temporary-password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"temporaryPassword\": \"TEMP123456\",\n  \"newPassword\": \"NewPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": [
@@ -193,7 +283,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"status\": \"success\",\n  \"token\": \"<jwt>\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\",\n    \"firstName\": \"John\"\n  }\n}"
+              "body": "{\n  \"message\": \"Password changed successfully. You can now sign in.\"\n}"
             }
           ]
         },
@@ -207,6 +297,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-otp"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"code\": \"123456\"\n}",
@@ -215,21 +308,32 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verify-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verify-otp"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/verify-otp"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -254,6 +358,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/resend-otp"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
@@ -262,21 +369,32 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/resend-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "resend-otp"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/resend-otp"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -302,19 +420,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/auth/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "me"
-              ]
+              "raw": "{{baseUrl}}/auth/me"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -325,7 +448,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Authenticated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"dateOfBirth\": \"1995-01-01T00:00:00.000Z\",\n    \"nationality\": \"Nigeria\",\n    \"phoneCountry\": \"+234\",\n    \"phoneNumber\": \"8123456789\",\n    \"isVerified\": true,\n    \"isActive\": true,\n    \"profileStatus\": \"PENDING_VERIFICATION\",\n    \"createdAt\": \"2026-03-02T12:00:00.000Z\",\n    \"updatedAt\": \"2026-03-02T12:00:00.000Z\"\n  }\n}"
+              "body": "{\n  \"message\": \"Authenticated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"email\": \"john@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"dateOfBirth\": \"1995-01-01T00:00:00.000Z\",\n    \"nationality\": \"Nigeria\",\n    \"phoneCountry\": \"+234\",\n    \"phoneNumber\": \"8123456789\",\n    \"profileStatus\": \"PENDING_VERIFICATION\"\n  }\n}"
             }
           ]
         },
@@ -339,6 +462,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\"\n}",
@@ -347,21 +473,32 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/forgot-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/forgot-password"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -377,6 +514,67 @@
           ]
         },
         {
+          "name": "Forgot Password Resend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password/resend"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/forgot-password/resend"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Verification code resent to your email\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Verify Reset OTP",
           "request": {
             "method": "POST",
@@ -386,6 +584,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-reset-otp"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\"\n}",
@@ -394,21 +595,32 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verify-reset-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verify-reset-otp"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/verify-reset-otp"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -433,29 +645,43 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"NewPassword123!\"\n}",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"password\": \"NewPassword123!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/reset-password",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "reset-password"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/reset-password"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"password\": \"NewPassword123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -471,54 +697,6 @@
           ]
         },
         {
-          "name": "Forgot Password Resend",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/forgot-password/resend",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password",
-                "resend"
-              ]
-            }
-          },
-          "response": [
-            {
-              "name": "OK Example",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Verification code resent to your email\"\n}"
-            }
-          ]
-        },
-        {
           "name": "Logout",
           "request": {
             "method": "POST",
@@ -529,19 +707,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
+              "raw": "{{baseUrl}}/auth/logout"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/logout"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -553,6 +736,235 @@
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"user_123\",\n  \"email\": \"john@example.com\",\n  \"profileStatus\": \"PENDING_VERIFICATION\",\n  \"kyc\": {\n    \"status\": \"PENDING_VERIFICATION\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\",\n  \"dateOfBirth\": \"1995-01-01\",\n  \"nationality\": \"Nigeria\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\",\n  \"dateOfBirth\": \"1995-01-01\",\n  \"nationality\": \"Nigeria\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"user_123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"nationality\": \"Nigeria\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me/password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me/password"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"oldPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Password updated successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deactivate My Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/users/me"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Account deactivated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isActive\": false\n  }\n}"
             }
           ]
         }
@@ -575,6 +987,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/kyc/personal"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"dateOfBirth\": \"1995-01-01\",\n  \"nationality\": \"Nigeria\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\"\n}",
@@ -583,21 +998,36 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/kyc/personal",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "kyc",
-                "personal"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/kyc/personal"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"dateOfBirth\": \"1995-01-01\",\n  \"nationality\": \"Nigeria\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -626,6 +1056,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/kyc/address"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"state\": \"Lagos\",\n  \"region\": \"Ikeja\",\n  \"homeAddress\": \"12 Example Street\"\n}",
@@ -634,21 +1067,36 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/kyc/address",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "kyc",
-                "address"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/kyc/address"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"state\": \"Lagos\",\n  \"region\": \"Ikeja\",\n  \"homeAddress\": \"12 Example Street\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -673,6 +1121,9 @@
                 "value": "Bearer {{token}}"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/kyc/documents"
+            },
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -700,23 +1151,95 @@
                   "key": "licenseBack",
                   "type": "file",
                   "src": ""
+                },
+                {
+                  "key": "governmentIdType",
+                  "type": "text",
+                  "value": "NIN"
+                },
+                {
+                  "key": "governmentIdNumber",
+                  "type": "text",
+                  "value": "12345678901"
+                },
+                {
+                  "key": "driverLicenseNumber",
+                  "type": "text",
+                  "value": "DL12345678"
+                },
+                {
+                  "key": "driverLicenseExpiry",
+                  "type": "text",
+                  "value": "2030-12-31"
                 }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/kyc/documents",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "kyc",
-                "documents"
               ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/kyc/documents"
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "passport",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "govFront",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "govBack",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "licenseFront",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "licenseBack",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "governmentIdType",
+                      "type": "text",
+                      "value": "NIN"
+                    },
+                    {
+                      "key": "governmentIdNumber",
+                      "type": "text",
+                      "value": "12345678901"
+                    },
+                    {
+                      "key": "driverLicenseNumber",
+                      "type": "text",
+                      "value": "DL12345678"
+                    },
+                    {
+                      "key": "driverLicenseExpiry",
+                      "type": "text",
+                      "value": "2030-12-31"
+                    }
+                  ]
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -742,41 +1265,19 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/rental/search?pickupLocationId={{pickupLocationId}}&dropoffLocationId={{dropoffLocationId}}&pickupAt=2026-02-06T10:00:00Z&returnAt=2026-02-07T10:00:00Z&countryCode={{countryCode}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "rental",
-                "search"
-              ],
-              "query": [
-                {
-                  "key": "pickupLocationId",
-                  "value": "{{pickupLocationId}}"
-                },
-                {
-                  "key": "dropoffLocationId",
-                  "value": "{{dropoffLocationId}}"
-                },
-                {
-                  "key": "pickupAt",
-                  "value": "2026-02-06T10:00:00Z"
-                },
-                {
-                  "key": "returnAt",
-                  "value": "2026-02-07T10:00:00Z"
-                },
-                {
-                  "key": "countryCode",
-                  "value": "{{countryCode}}"
-                }
-              ]
+              "raw": "{{baseUrl}}/rental/search?pickupLocationId={{pickupLocationId}}&dropoffLocationId={{dropoffLocationId}}&pickupAt=2026-02-06T10:00:00Z&returnAt=2026-02-07T10:00:00Z&countryCode={{countryCode}}"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/rental/search?pickupLocationId={{pickupLocationId}}&dropoffLocationId={{dropoffLocationId}}&pickupAt=2026-02-06T10:00:00Z&returnAt=2026-02-07T10:00:00Z&countryCode={{countryCode}}"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -787,51 +1288,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"search\": {\n    \"pickupAt\": \"2026-02-06T10:00:00Z\",\n    \"returnAt\": \"2026-02-07T10:00:00Z\",\n    \"countryCode\": \"NG\"\n  },\n  \"total\": 1,\n  \"cars\": [\n    {\n      \"id\": \"car_123\",\n      \"brand\": \"Toyota\",\n      \"model\": \"Corolla\",\n      \"dailyRate\": 25000,\n      \"provider\": {\n        \"id\": \"prov_1\",\n        \"name\": \"SureRide Rentals\"\n      },\n      \"location\": {\n        \"id\": \"loc_1\",\n        \"name\": \"Ikeja City Mall\"\n      },\n      \"images\": [\n        {\n          \"id\": \"img_1\",\n          \"url\": \"https://example.com/car.jpg\",\n          \"isPrimary\": true\n        }\n      ]\n    }\n  ]\n}"
-            }
-          ]
-        },
-        {
-          "name": "Search Locations",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/rental/locations/search?q={{locationQuery}}&countryId={{countryId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "rental",
-                "locations",
-                "search"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "{{locationQuery}}"
-                },
-                {
-                  "key": "countryId",
-                  "value": "{{countryId}}"
-                }
-              ]
-            }
-          },
-          "response": [
-            {
-              "name": "OK Example",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\",\n    \"address\": \"Ikeja, Lagos\",\n    \"countryId\": \"country_ng\",\n    \"providerId\": \"prov_1\",\n    \"country\": {\n      \"id\": \"country_ng\",\n      \"name\": \"Nigeria\",\n      \"code\": \"NG\"\n    },\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    }\n  }\n]"
+              "body": "{\n  \"search\": {\n    \"pickupAt\": \"2026-02-06T10:00:00Z\",\n    \"returnAt\": \"2026-02-07T10:00:00Z\",\n    \"countryCode\": \"NG\"\n  },\n  \"total\": 1,\n  \"cars\": [\n    {\n      \"id\": \"car_123\",\n      \"brand\": \"Toyota\",\n      \"model\": \"Corolla\"\n    }\n  ]\n}"
             }
           ]
         },
@@ -841,19 +1298,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/rental/cars",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "rental",
-                "cars"
-              ]
+              "raw": "{{baseUrl}}/rental/cars"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/rental/cars"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -864,7 +1321,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"car_123\",\n    \"brand\": \"Toyota\",\n    \"model\": \"Corolla\",\n    \"category\": \"ECONOMY\",\n    \"year\": 2022,\n    \"dailyRate\": 25000,\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    },\n    \"location\": {\n      \"id\": \"loc_1\",\n      \"name\": \"Ikeja City Mall\"\n    },\n    \"images\": [\n      {\n        \"id\": \"img_1\",\n        \"url\": \"https://example.com/cars/corolla.jpg\",\n        \"isPrimary\": true\n      }\n    ]\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"car_123\",\n    \"brand\": \"Toyota\",\n    \"model\": \"Corolla\",\n    \"images\": [\n      {\n        \"id\": \"img_1\",\n        \"url\": \"/uploads/cars/sample.jpg\",\n        \"isPrimary\": true\n      }\n    ]\n  }\n]"
             }
           ]
         },
@@ -874,19 +1331,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/rental/locations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "rental",
-                "locations"
-              ]
+              "raw": "{{baseUrl}}/rental/locations"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/rental/locations"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -897,7 +1354,40 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\",\n    \"address\": \"Ikeja, Lagos\",\n    \"country\": {\n      \"id\": \"country_ng\",\n      \"name\": \"Nigeria\",\n      \"code\": \"NG\"\n    },\n    \"provider\": {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\"\n    }\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\",\n    \"address\": \"Ikeja, Lagos\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Search Locations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/rental/locations/search?q={{locationQuery}}&countryId={{countryId}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/rental/locations/search?q={{locationQuery}}&countryId={{countryId}}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"loc_1\",\n    \"name\": \"Ikeja City Mall\"\n  }\n]"
             }
           ]
         }
@@ -916,29 +1406,43 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/pricing/pricing-preview"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"insuranceId\": \"{{insuranceId}}\"\n}",
+              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/pricing/pricing-preview",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "pricing",
-                "pricing-preview"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/pricing/pricing-preview"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -949,7 +1453,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Price calculated\",\n  \"data\": {\n    \"rentalDays\": 1,\n    \"basePrice\": 25000,\n    \"insuranceFee\": 2000,\n    \"totalPrice\": 27000\n  }\n}"
+              "body": "{\n  \"message\": \"Price calculated\",\n  \"data\": {\n    \"rentalDays\": 1,\n    \"basePrice\": 25000,\n    \"insuranceFee\": 0,\n    \"totalPrice\": 25000\n  }\n}"
             }
           ]
         }
@@ -972,28 +1476,47 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/bookings"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"pickupLocationId\": \"{{pickupLocationId}}\",\n  \"dropoffLocationId\": \"{{dropoffLocationId}}\",\n  \"insuranceId\": \"{{insuranceId}}\"\n}",
+              "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"pickupLocationId\": \"{{pickupLocationId}}\",\n  \"dropoffLocationId\": \"{{dropoffLocationId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/bookings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "bookings"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"carId\": \"{{carId}}\",\n  \"pickupAt\": \"2026-02-06T10:00:00Z\",\n  \"returnAt\": \"2026-02-07T10:00:00Z\",\n  \"pickupLocationId\": \"{{pickupLocationId}}\",\n  \"dropoffLocationId\": \"{{dropoffLocationId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1004,7 +1527,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Booking created successfully\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"PENDING\"\n  }\n}"
+              "body": "{\n  \"message\": \"Booking created successfully\",\n  \"booking\": {\n    \"id\": \"booking_123\",\n    \"status\": \"PENDING\"\n  }\n}"
             }
           ]
         },
@@ -1019,24 +1542,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings?status=IN_PROGRESS",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "bookings"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "IN_PROGRESS"
-                }
-              ]
+              "raw": "{{baseUrl}}/bookings?status=IN_PROGRESS"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings?status=IN_PROGRESS"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1047,7 +1570,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"book_123\",\n    \"status\": \"PENDING\",\n    \"car\": {\n      \"id\": \"car_123\",\n      \"brand\": \"Toyota\",\n      \"model\": \"Corolla\"\n    }\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"booking_123\",\n    \"status\": \"PENDING\"\n  }\n]"
             }
           ]
         },
@@ -1062,19 +1585,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}"
-              ]
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1085,7 +1613,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"book_123\",\n  \"pickupCode\": \"BOOK1234\",\n  \"status\": \"PENDING\"\n}"
+              "body": "{\n  \"id\": \"booking_123\",\n  \"pickupCode\": \"BOOKING1\",\n  \"status\": \"PENDING\"\n}"
             }
           ]
         },
@@ -1100,20 +1628,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}",
-                "cancel"
-              ]
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1124,7 +1656,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Booking cancelled successfully\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"CANCELLED\"\n  }\n}"
+              "body": "{\n  \"message\": \"Booking cancelled successfully\",\n  \"booking\": {\n    \"id\": \"booking_123\",\n    \"status\": \"CANCELLED\"\n  }\n}"
             }
           ]
         },
@@ -1139,20 +1671,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}/confirm",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}",
-                "confirm"
-              ]
+              "raw": "{{baseUrl}}/bookings/{{bookingId}}/confirm"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/bookings/{{bookingId}}/confirm"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1163,7 +1699,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Booking confirmed\",\n  \"booking\": {\n    \"id\": \"book_123\",\n    \"status\": \"CONFIRMED\"\n  }\n}"
+              "body": "{\n  \"message\": \"Booking confirmed\",\n  \"booking\": {\n    \"id\": \"booking_123\",\n    \"status\": \"CONFIRMED\"\n  }\n}"
             }
           ]
         }
@@ -1186,6 +1722,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/features"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\",\n  \"icon\": \"gps\"\n}",
@@ -1194,22 +1733,36 @@
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/admin/features",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "features"
-              ]
             }
           },
           "response": [
             {
-              "name": "Created Example",
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/features"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\",\n  \"icon\": \"gps\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -1220,7 +1773,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"feat_global_1\",\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\",\n  \"icon\": \"gps\",\n  \"providerId\": null,\n  \"isActive\": true\n}"
+              "body": "{\n  \"id\": \"feature_1\",\n  \"name\": \"GPS\",\n  \"category\": \"COMFORT\"\n}"
             }
           ]
         },
@@ -1231,37 +1784,54 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{providerToken}}"
               },
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/provider/features"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"child-seat\"\n}",
+              "raw": "{\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"seat\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/provider/features",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "provider",
-                "features"
-              ]
             }
           },
           "response": [
             {
-              "name": "Created Example",
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/provider/features"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"seat\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "Created",
               "code": 201,
               "_postman_previewlanguage": "json",
@@ -1272,7 +1842,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"feat_provider_1\",\n  \"name\": \"Child Seat\",\n  \"category\": \"SAFETY\",\n  \"icon\": \"child-seat\",\n  \"providerId\": \"prov_1\",\n  \"isActive\": true\n}"
+              "body": "{\n  \"id\": \"feature_2\",\n  \"name\": \"Child Seat\"\n}"
             }
           ]
         },
@@ -1283,24 +1853,28 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{providerToken}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/provider/features",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "provider",
-                "features"
-              ]
+              "raw": "{{baseUrl}}/api/provider/features"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/provider/features"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1311,7 +1885,7 @@
                 }
               ],
               "cookie": [],
-              "body": "[\n  {\n    \"id\": \"feat_global_1\",\n    \"name\": \"GPS\",\n    \"category\": \"COMFORT\",\n    \"providerId\": null,\n    \"isActive\": true\n  },\n  {\n    \"id\": \"feat_provider_1\",\n    \"name\": \"Child Seat\",\n    \"category\": \"SAFETY\",\n    \"providerId\": \"prov_1\",\n    \"isActive\": true\n  }\n]"
+              "body": "[\n  {\n    \"id\": \"feature_1\",\n    \"name\": \"GPS\"\n  },\n  {\n    \"id\": \"feature_2\",\n    \"name\": \"Child Seat\"\n  }\n]"
             }
           ]
         },
@@ -1322,39 +1896,54 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{token}}"
+                "value": "Bearer {{providerToken}}"
               },
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/provider/cars/{{carId}}/features"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"featureIds\": {{featureIds}}\n}",
+              "raw": "{\n  \"featureIds\": [\n    \"{{featureId}}\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/provider/cars/{{carId}}/features",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "provider",
-                "cars",
-                "{{carId}}",
-                "features"
-              ]
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/provider/cars/{{carId}}/features"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"featureIds\": [\n    \"{{featureId}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1365,7 +1954,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"message\": \"Features attached successfully\"\n}"
+              "body": "{\n  \"message\": \"Features attached to car\",\n  \"total\": 1\n}"
             }
           ]
         },
@@ -1375,20 +1964,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/cars/{{carId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "cars",
-                "{{carId}}"
-              ]
+              "raw": "{{baseUrl}}/api/cars/{{carId}}"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/cars/{{carId}}"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1399,7 +1987,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"id\": \"car_123\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"groupedFeatures\": {\n    \"COMFORT\": [\n      {\n        \"id\": \"feat_global_1\",\n        \"name\": \"GPS\",\n        \"icon\": \"gps\"\n      }\n    ],\n    \"SAFETY\": [\n      {\n        \"id\": \"feat_provider_1\",\n        \"name\": \"Child Seat\",\n        \"icon\": \"child-seat\"\n      }\n    ]\n  }\n}"
+              "body": "{\n  \"id\": \"car_123\",\n  \"brand\": \"Toyota\",\n  \"features\": [\n    {\n      \"id\": \"feature_1\",\n      \"name\": \"GPS\"\n    }\n  ]\n}"
             }
           ]
         }
@@ -1414,19 +2002,19 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/payments/config",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "payments",
-                "config"
-              ]
+              "raw": "{{baseUrl}}/payments/config"
             }
           },
           "response": [
             {
-              "name": "OK Example",
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/config"
+                }
+              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1455,6 +2043,9 @@
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/payment-sheet"
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}",
@@ -1463,16 +2054,2129 @@
                   "language": "json"
                 }
               }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/payment-sheet"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"provider\": \"STRIPE\",\n  \"bookingId\": \"booking_123\",\n  \"paymentIntentClientSecret\": \"pi_xxx_secret_xxx\",\n  \"publishableKey\": \"pk_test_xxx\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Stripe Webhook (Test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "stripe-signature",
+                "value": "{{stripeSignature}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/webhook/stripe"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\":\"evt_test\",\"type\":\"payment_intent.succeeded\"}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "stripe-signature",
+                    "value": "{{stripeSignature}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/payments/webhook/stripe"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"id\":\"evt_test\",\"type\":\"payment_intent.succeeded\"}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"received\": true,\n  \"processed\": true\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider Requests (Public)",
+      "item": [
+        {
+          "name": "Submit Provider Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/providers/request"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"RoadStar Rentals\",\n  \"email\": \"owner@roadstar.com\",\n  \"phone\": \"+2348010000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/providers/request"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"businessName\": \"RoadStar Rentals\",\n  \"email\": \"owner@roadstar.com\",\n  \"phone\": \"+2348010000000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Request submitted successfully. We will contact you.\",\n  \"request\": {\n    \"id\": \"req_123\",\n    \"status\": \"PENDING\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sureride.com\",\n  \"password\": \"AdminPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/auth/login"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"admin@sureride.com\",\n  \"password\": \"AdminPass123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Login successful\",\n  \"token\": \"<admin_jwt>\",\n  \"admin\": {\n    \"id\": \"admin_1\",\n    \"email\": \"admin@sureride.com\",\n    \"role\": \"SUPER_ADMIN\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Admin Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/auth/logout"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/auth/logout"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider Auth",
+      "item": [
+        {
+          "name": "Provider Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/auth/login"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"provider@sureride.com\",\n  \"password\": \"ProviderPass123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/auth/login"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"provider@sureride.com\",\n  \"password\": \"ProviderPass123!\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Login successful\",\n  \"token\": \"<provider_jwt>\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"email\": \"provider@sureride.com\",\n    \"status\": \"ACTIVE\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Provider Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/auth/logout"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/auth/logout"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Logged out successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider Cars",
+      "item": [
+        {
+          "name": "Create Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"locationId\": \"{{pickupLocationId}}\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"category\": \"ECONOMY\",\n  \"year\": 2022,\n  \"seats\": 4,\n  \"bags\": \"2\",\n  \"hasAC\": true,\n  \"transmission\": \"AUTOMATIC\",\n  \"mileagePolicy\": \"UNLIMITED\",\n  \"dailyRate\": 25000,\n  \"hourlyRate\": 4000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"locationId\": \"{{pickupLocationId}}\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Corolla\",\n  \"category\": \"ECONOMY\",\n  \"year\": 2022,\n  \"seats\": 4,\n  \"bags\": \"2\",\n  \"hasAC\": true,\n  \"transmission\": \"AUTOMATIC\",\n  \"mileagePolicy\": \"UNLIMITED\",\n  \"dailyRate\": 25000,\n  \"hourlyRate\": 4000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Car created\",\n  \"car\": {\n    \"id\": \"car_123\",\n    \"status\": \"DRAFT\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Car",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars/{{carId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dailyRate\": 26000,\n  \"hourlyRate\": 4500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars/{{carId}}"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dailyRate\": 26000,\n  \"hourlyRate\": 4500\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Car updated\",\n  \"car\": {\n    \"id\": \"car_123\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Car For Approval",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars/{{carId}}/submit"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Ready for moderation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars/{{carId}}/submit"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"note\": \"Ready for moderation\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Car submitted for approval\",\n  \"car\": {\n    \"id\": \"car_123\",\n    \"status\": \"PENDING_APPROVAL\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Car Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars/{{carId}}/images"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars/{{carId}}/images"
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": ""
+                    },
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": ""
+                    }
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Images uploaded successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Car Image",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars/{{carId}}/images/{{imageId}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars/{{carId}}/images/{{imageId}}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Image deleted\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Attach Features To Car",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{providerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/provider/cars/{{carId}}/features"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"featureIds\": [\n    \"{{featureId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{providerToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/provider/cars/{{carId}}/features"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"featureIds\": [\n    \"{{featureId}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Features attached to car\",\n  \"total\": 1\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Providers",
+      "item": [
+        {
+          "name": "List Providers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers?status=PENDING_APPROVAL&page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers?status=PENDING_APPROVAL&page=1&limit=20"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"prov_1\",\n      \"name\": \"SureRide Rentals\",\n      \"status\": \"pending\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Provider",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"prov_1\",\n  \"name\": \"SureRide Rentals\",\n  \"workflowStatus\": \"PENDING_APPROVAL\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Provider (Draft)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SureRide Rentals\",\n  \"email\": \"provider@sureride.com\",\n  \"phone\": \"+2348012345678\",\n  \"contactPersonName\": \"Manager\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"SureRide Rentals\",\n  \"email\": \"provider@sureride.com\",\n  \"phone\": \"+2348012345678\",\n  \"contactPersonName\": \"Manager\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"prov_1\",\n  \"status\": \"draft\",\n  \"workflowStatus\": \"DRAFT\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Provider Draft (Alias)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/draft"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SureRide Rentals\",\n  \"email\": \"provider@sureride.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/draft"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"SureRide Rentals\",\n  \"email\": \"provider@sureride.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"prov_1\",\n  \"status\": \"draft\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Provider",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/submit"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/submit"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Provider submitted for admin approval\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"workflowStatus\": \"PENDING_APPROVAL\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve Provider",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/approve"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/approve"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Provider approved\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"status\": \"ACTIVE\",\n    \"isVerified\": true,\n    \"isActive\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Suspend Provider",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/suspend"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Compliance hold\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/suspend"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Compliance hold\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Provider suspended\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"status\": \"SUSPENDED\",\n    \"isActive\": false\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Provider Commission",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/commission"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commissionRate\": 0.12\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/commission"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"commissionRate\": 0.12\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Commission updated\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"commissionRate\": 0.12\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Provider Documents",
+      "item": [
+        {
+          "name": "List Provider Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/documents"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/documents"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"doc_1\",\n    \"type\": \"CAC\",\n    \"status\": \"PENDING\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Approve Provider Document",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/provider-docs/{{docId}}/approve"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/provider-docs/{{docId}}/approve"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Document approved\",\n  \"doc\": {\n    \"id\": \"doc_1\",\n    \"status\": \"APPROVED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Provider Document",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/provider-docs/{{docId}}/reject"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Invalid document quality\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/provider-docs/{{docId}}/reject"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Invalid document quality\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Document rejected\",\n  \"doc\": {\n    \"id\": \"doc_1\",\n    \"status\": \"REJECTED\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Payouts",
+      "item": [
+        {
+          "name": "Upsert Provider Payout Account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/payout-account"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bankName\": \"GTBank\",\n  \"accountNumber\": \"0123456789\",\n  \"accountName\": \"SureRide Rentals\",\n  \"currency\": \"NGN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/payout-account"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"bankName\": \"GTBank\",\n  \"accountNumber\": \"0123456789\",\n  \"accountName\": \"SureRide Rentals\",\n  \"currency\": \"NGN\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payout account saved\",\n  \"account\": {\n    \"id\": \"acct_1\",\n    \"providerId\": \"prov_1\",\n    \"bankName\": \"GTBank\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Provider Payout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/providers/{{providerId}}/payouts"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 150000,\n  \"note\": \"Weekly settlement\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/providers/{{providerId}}/payouts"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 150000,\n  \"note\": \"Weekly settlement\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payout created\",\n  \"payout\": {\n    \"id\": \"payout_1\",\n    \"status\": \"PENDING\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Payout Paid",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payouts/{{payoutId}}/paid"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reference\": \"TRF-2026-0001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/payouts/{{payoutId}}/paid"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reference\": \"TRF-2026-0001\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payout marked as paid\",\n  \"payout\": {\n    \"id\": \"payout_1\",\n    \"status\": \"PAID\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Provider Requests",
+      "item": [
+        {
+          "name": "List Provider Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/provider-requests?status=PENDING&page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/provider-requests?status=PENDING&page=1&limit=20"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"req_123\",\n      \"businessName\": \"RoadStar Rentals\",\n      \"status\": \"PENDING\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve Provider Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/provider-requests/{{providerRequestId}}/approve"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/provider-requests/{{providerRequestId}}/approve"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Provider request approved\",\n  \"provider\": {\n    \"id\": \"prov_1\",\n    \"email\": \"owner@roadstar.com\",\n    \"status\": \"ACTIVE\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Provider Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/provider-requests/{{providerRequestId}}/reject"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminNote\": \"Incomplete company details\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/provider-requests/{{providerRequestId}}/reject"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"adminNote\": \"Incomplete company details\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Provider request rejected\",\n  \"request\": {\n    \"id\": \"req_123\",\n    \"status\": \"REJECTED\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"newuser@example.com\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8123456789\",\n  \"dateOfBirth\": \"1996-01-01\",\n  \"nationality\": \"Nigeria\",\n  \"isActive\": true,\n  \"isVerified\": false,\n  \"profileStatus\": \"INCOMPLETE\",\n  \"sendInvite\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
-              "raw": "{{baseUrl}}/payments/payment-sheet",
-              "host": [
-                "{{baseUrl}}"
+              "raw": "{{baseUrl}}/admin/users"
+            }
+          },
+          "response": [
+            {
+              "name": "Created Example",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
               ],
-              "path": [
-                "payments",
-                "payment-sheet"
-              ]
+              "cookie": [],
+              "body": "{\n  \"message\": \"User created\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"newuser@example.com\",\n    \"phoneCountry\": \"+234\",\n    \"phoneNumber\": \"8123456789\",\n    \"nationality\": \"Nigeria\",\n    \"isVerified\": false,\n    \"isActive\": true,\n    \"mustChangePassword\": true,\n    \"tempPasswordExpiresAt\": \"2026-03-16T20:00:00.000Z\",\n    \"profileStatus\": \"INCOMPLETE\"\n  },\n  \"inviteEmailSent\": true,\n  \"temporaryPasswordGenerated\": true,\n  \"temporaryPasswordExpiresAt\": \"2026-03-16T20:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users?page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users?page=1&limit=20"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"user_123\",\n      \"email\": \"john@example.com\",\n      \"profileStatus\": \"PENDING_VERIFICATION\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users/{{userId}}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"user_123\",\n  \"email\": \"john@example.com\",\n  \"profileStatus\": \"PENDING_VERIFICATION\",\n  \"kyc\": {\n    \"status\": \"PENDING_VERIFICATION\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Active Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/status"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users/{{userId}}/status"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"isActive\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"User status updated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isActive\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Verification",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/verification"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isVerified\": true,\n  \"profileStatus\": \"VERIFIED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users/{{userId}}/verification"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"isVerified\": true,\n  \"profileStatus\": \"VERIFIED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"User verification updated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isVerified\": true,\n    \"profileStatus\": \"VERIFIED\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Profile Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/profile-status"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profileStatus\": \"PENDING_VERIFICATION\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/admin/users/{{userId}}/profile-status"
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"profileStatus\": \"PENDING_VERIFICATION\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Profile status updated\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"profileStatus\": \"PENDING_VERIFICATION\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve User KYC",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/kyc/approve"
             }
           },
           "response": [
@@ -1488,48 +4192,40 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"provider\": \"STRIPE\",\n  \"bookingId\": \"book_123\",\n  \"amount\": 2700000,\n  \"currency\": \"ngn\",\n  \"paymentIntentClientSecret\": \"pi_xxx_secret_xxx\",\n  \"publishableKey\": \"pk_test_xxx\"\n}"
+              "body": "{\n  \"message\": \"KYC approved\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isVerified\": true,\n    \"profileStatus\": \"VERIFIED\",\n    \"kyc\": {\n      \"status\": \"VERIFIED\",\n      \"rejectionReason\": null,\n      \"passportPhotoUrl\": \"http://localhost:4000/uploads/passport-file.jpg\",\n      \"governmentIdFrontUrl\": \"http://localhost:4000/uploads/gov-front.jpg\"\n    }\n  }\n}"
             }
           ]
         },
         {
-          "name": "Stripe Webhook (Test)",
+          "name": "Reject User KYC",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              },
-              {
-                "key": "stripe-signature",
-                "value": "{{stripeSignature}}"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/kyc/reject"
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id\": \"evt_test_webhook\",\n  \"type\": \"payment_intent.succeeded\",\n  \"data\": {\n    \"object\": {\n      \"id\": \"pi_test\",\n      \"object\": \"payment_intent\",\n      \"metadata\": {\n        \"bookingId\": \"{{bookingId}}\"\n      }\n    }\n  }\n}",
+              "raw": "{\n  \"reason\": \"Document details do not match.\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/payments/webhook/stripe",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "payments",
-                "webhook",
-                "stripe"
-              ]
             }
           },
           "response": [
             {
-              "name": "Processed Example",
+              "name": "OK Example",
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -1540,7 +4236,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"received\": true,\n  \"processed\": true,\n  \"bookingId\": \"book_123\",\n  \"paymentStatus\": \"SUCCEEDED\",\n  \"eventType\": \"payment_intent.succeeded\"\n}"
+              "body": "{\n  \"message\": \"KYC rejected\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isVerified\": false,\n    \"profileStatus\": \"REJECTED\",\n    \"kyc\": {\n      \"status\": \"REJECTED\",\n      \"rejectionReason\": \"Document details do not match.\",\n      \"passportPhotoUrl\": \"http://localhost:4000/uploads/passport-file.jpg\"\n    }\n  }\n}"
             }
           ]
         }

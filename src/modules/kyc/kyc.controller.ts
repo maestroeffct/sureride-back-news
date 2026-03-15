@@ -87,6 +87,10 @@ export async function uploadDocuments(req: Request, res: Response) {
   try {
     const userId = req.user?.userId;
 
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
@@ -113,18 +117,38 @@ export async function uploadDocuments(req: Request, res: Response) {
         ? new Date(driverLicenseExpiry)
         : undefined;
 
-    await prisma.userKyc.update({
+    const kycUpdateData = {
+      ...(passport && { passportPhotoUrl: passport }),
+      ...(govFront && { governmentIdFrontUrl: govFront }),
+      ...(govBack && { governmentIdBackUrl: govBack }),
+      ...(licenseFront && { driverLicenseFrontUrl: licenseFront }),
+      ...(licenseBack && { driverLicenseBackUrl: licenseBack }),
+      ...(governmentIdType && { governmentIdType }),
+      ...(governmentIdNumber && { governmentIdNumber }),
+      ...(driverLicenseNumber && { driverLicenseNumber }),
+      ...(parsedDriverLicenseExpiry && {
+        driverLicenseExpiry: parsedDriverLicenseExpiry,
+      }),
+      status: "PENDING_VERIFICATION" as const,
+    };
+
+    await prisma.userKyc.upsert({
       where: { userId },
-      data: {
-        passportPhotoUrl: passport,
-        governmentIdFrontUrl: govFront,
-        governmentIdBackUrl: govBack,
-        driverLicenseFrontUrl: licenseFront,
-        driverLicenseBackUrl: licenseBack,
-        ...(governmentIdType && { governmentIdType }),
-        ...(governmentIdNumber && { governmentIdNumber }),
-        ...(driverLicenseNumber && { driverLicenseNumber }),
-        ...(parsedDriverLicenseExpiry && { driverLicenseExpiry: parsedDriverLicenseExpiry }),
+      update: kycUpdateData,
+      create: {
+        user: { connect: { id: userId } },
+        state: "",
+        region: "",
+        homeAddress: "",
+        governmentIdType: governmentIdType ?? "",
+        governmentIdNumber: governmentIdNumber ?? "",
+        driverLicenseNumber: driverLicenseNumber ?? "",
+        driverLicenseExpiry: parsedDriverLicenseExpiry ?? new Date(),
+        passportPhotoUrl: passport ?? "",
+        governmentIdFrontUrl: govFront ?? "",
+        governmentIdBackUrl: govBack ?? "",
+        driverLicenseFrontUrl: licenseFront ?? "",
+        driverLicenseBackUrl: licenseBack ?? "",
         status: "PENDING_VERIFICATION",
       },
     });

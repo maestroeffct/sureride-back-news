@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_cars_controller_1 = require("./admin.cars.controller");
+const router = (0, express_1.Router)();
+router.get("/cars", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminListCarsController);
+router.get("/cars/:carId", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminGetCarController);
+router.post("/cars", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminCreateCarController);
+router.patch("/cars/:carId", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminUpdateCarController);
+router.patch("/cars/:carId/approve", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminApproveCarController);
+router.patch("/cars/:carId/reject", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminRejectCarController);
+router.patch("/cars/:carId/flag", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminFlagCarController);
+router.patch("/cars/:carId/unflag", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminUnflagCarController);
+router.patch("/cars/:carId/activate", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminActivateCarController);
+router.patch("/cars/:carId/deactivate", admin_middleware_1.requireAdminAuth, admin_cars_controller_1.adminDeactivateCarController);
+exports.default = router;

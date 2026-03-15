@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  changeTemporaryPasswordHandler,
   forgotPasswordHandler,
   getMe,
   login,
@@ -26,6 +27,7 @@ router.get("/me", requireAuth, getMe);
 router.post("/forgot-password", forgotPasswordHandler);
 router.post("/verify-reset-otp", verifyResetOtpHandler);
 router.post("/reset-password", resetPasswordHandler);
+router.post("/change-temporary-password", changeTemporaryPasswordHandler);
 
 router.post("/forgot-password/resend", resendForgotPassword);
 

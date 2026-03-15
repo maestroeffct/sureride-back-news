@@ -12,12 +12,22 @@ async function providerLogin(email, password) {
     const provider = await prisma_1.prisma.rentalProvider.findUnique({
         where: { email: email.toLowerCase() },
     });
-    if (!provider || !provider.isActive) {
+    if (!provider) {
         throw new Error("INVALID_CREDENTIALS");
     }
+    if (!provider.password) {
+        throw new Error("PROVIDER_ACCOUNT_NOT_READY");
+    }
     const ok = await bcryptjs_1.default.compare(password, provider.password);
-    if (!ok)
+    if (!ok) {
         throw new Error("INVALID_CREDENTIALS");
+    }
+    if (provider.status === "SUSPENDED" || !provider.isActive) {
+        throw new Error("PROVIDER_SUSPENDED");
+    }
+    if (provider.status !== "ACTIVE") {
+        throw new Error("PROVIDER_PENDING_APPROVAL");
+    }
     if (!provider.isVerified) {
         throw new Error("PROVIDER_NOT_VERIFIED");
     }
@@ -40,6 +50,7 @@ async function providerLogin(email, password) {
             id: provider.id,
             name: provider.name,
             email: provider.email,
+            status: provider.status,
         },
     };
 }

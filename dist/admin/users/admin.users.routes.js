@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_users_controller_1 = require("./admin.users.controller");
+const router = (0, express_1.Router)();
+router.get("/users", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminListUsersController);
+router.get("/users/:userId", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminGetUserController);
+router.patch("/users/:userId/status", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminUserStatusController);
+router.patch("/users/:userId/verification", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminVerificationController);
+router.patch("/users/:userId/profile-status", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminProfileStatusController);
+router.patch("/users/:userId/kyc/approve", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminApproveKycController);
+router.patch("/users/:userId/kyc/reject", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminRejectKycController);
+exports.default = router;

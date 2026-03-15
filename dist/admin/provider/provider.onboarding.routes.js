@@ -5,6 +5,8 @@ const provider_onboarding_controller_1 = require("./provider.onboarding.controll
 const admin_middleware_1 = require("../../middleware/admin.middleware");
 const router = (0, express_1.Router)();
 router.get("/providers", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.getProviders);
+router.get("/providers/:providerId", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.getProvider);
+router.post("/providers", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.saveDraftProvider);
 router.post("/providers/draft", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.saveDraftProvider);
 router.patch("/providers/:providerId/submit", admin_middleware_1.requireAdminAuth, provider_onboarding_controller_1.finalizeProvider);
 exports.default = router;

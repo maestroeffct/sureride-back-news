@@ -55,6 +55,9 @@ async function loginUser(email, password) {
     if (!user) {
         throw new Error("INVALID_CREDENTIALS");
     }
+    if (!user.isActive) {
+        throw new Error("ACCOUNT_SUSPENDED");
+    }
     const isMatch = await bcryptjs_1.default.compare(password, user.password);
     if (!isMatch) {
         throw new Error("INVALID_CREDENTIALS");

@@ -19,3 +19,9 @@ export const registerSchema = z.object({
     .string()
     .refine((val) => !isNaN(Date.parse(val)), "Invalid date of birth"),
 });
+
+export const changeTemporaryPasswordSchema = z.object({
+  email: z.string().email().transform((v) => v.toLowerCase()),
+  temporaryPassword: z.string().min(6),
+  newPassword: z.string().min(6),
+});

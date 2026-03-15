@@ -1,12 +1,16 @@
 import { Request, Response } from "express";
 import {
+  changeTemporaryPassword,
   forgotPassword,
   loginUser,
   logoutUser,
   registerUser,
   resetPassword,
 } from "./auth.service";
-import { registerSchema } from "./auth.validation";
+import {
+  changeTemporaryPasswordSchema,
+  registerSchema,
+} from "./auth.validation";
 import { ZodError } from "zod";
 import { prisma } from "../../prisma";
 import { signToken } from "../../utils/jwt";
@@ -111,8 +115,30 @@ export async function login(req: Request, res: Response) {
       user: result.user,
     });
   } catch (err: any) {
+    if (err.message === "ACCOUNT_SUSPENDED") {
+      return res.status(403).json({
+        message: "Account suspended",
+        code: "ACCOUNT_SUSPENDED",
+      });
+    }
+
+    if (err.message === "PASSWORD_CHANGE_REQUIRED") {
+      return res.status(403).json({
+        message: "Temporary password must be changed before login",
+        code: "PASSWORD_CHANGE_REQUIRED",
+      });
+    }
+
+    if (err.message === "TEMP_PASSWORD_EXPIRED") {
+      return res.status(403).json({
+        message: "Temporary password has expired. Use forgot password.",
+        code: "TEMP_PASSWORD_EXPIRED",
+      });
+    }
+
     return res.status(401).json({
       message: "Invalid email or password",
+      code: "UNAUTHORIZED",
     });
   }
 }
@@ -134,6 +160,13 @@ export async function verifyOtpHandler(req: Request, res: Response) {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "Account suspended",
+        code: "ACCOUNT_SUSPENDED",
+      });
     }
 
     const session = await prisma.session.create({
@@ -256,6 +289,61 @@ export async function verifyResetOtpHandler(req: Request, res: Response) {
     message: "OTP verified",
     userId,
   });
+}
+
+export async function changeTemporaryPasswordHandler(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const body = changeTemporaryPasswordSchema.parse(req.body);
+
+    await changeTemporaryPassword(
+      body.email,
+      body.temporaryPassword,
+      body.newPassword,
+    );
+
+    return res.json({
+      message: "Password changed successfully. You can now sign in.",
+    });
+  } catch (err: any) {
+    if (err instanceof ZodError) {
+      const errors = err.issues.map((e) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }));
+      return res.status(400).json({
+        message: "Validation failed",
+        errors,
+      });
+    }
+
+    if (err.message === "TEMP_PASSWORD_NOT_REQUIRED") {
+      return res.status(400).json({
+        message:
+          "This account does not require temporary password change. Please sign in normally.",
+        code: "TEMP_PASSWORD_NOT_REQUIRED",
+      });
+    }
+
+    if (err.message === "TEMP_PASSWORD_EXPIRED") {
+      return res.status(400).json({
+        message: "Temporary password expired. Use forgot password.",
+        code: "TEMP_PASSWORD_EXPIRED",
+      });
+    }
+
+    if (err.message === "INVALID_TEMP_CREDENTIALS") {
+      return res.status(401).json({
+        message: "Invalid email or temporary password",
+        code: "UNAUTHORIZED",
+      });
+    }
+
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 
 export async function resetPasswordHandler(req: Request, res: Response) {

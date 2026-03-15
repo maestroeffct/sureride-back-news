@@ -14,6 +14,15 @@ type RegisterPayload = {
   dob: string; // ISO date
 };
 
+function isTempPasswordExpired(user: {
+  mustChangePassword: boolean;
+  tempPasswordExpiresAt: Date | null;
+}) {
+  if (!user.mustChangePassword) return false;
+  if (!user.tempPasswordExpiresAt) return false;
+  return user.tempPasswordExpiresAt.getTime() < Date.now();
+}
+
 export async function registerUser(data: RegisterPayload) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -68,9 +77,21 @@ export async function loginUser(email: string, password: string) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
+  if (!user.isActive) {
+    throw new Error("ACCOUNT_SUSPENDED");
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error("INVALID_CREDENTIALS");
+  }
+
+  if (isTempPasswordExpired(user)) {
+    throw new Error("TEMP_PASSWORD_EXPIRED");
+  }
+
+  if (user.mustChangePassword) {
+    throw new Error("PASSWORD_CHANGE_REQUIRED");
   }
 
   // 🔒 Not verified → send OTP
@@ -124,17 +145,64 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(email: string, password: string) {
+  const normalizedEmail = email.toLowerCase();
   const hashed = await bcrypt.hash(password, 10);
 
   await prisma.$transaction([
     prisma.user.update({
-      where: { email: email },
-      data: { password: hashed },
+      where: { email: normalizedEmail },
+      data: {
+        password: hashed,
+        mustChangePassword: false,
+        tempPasswordExpiresAt: null,
+      },
     }),
     prisma.otp.deleteMany({
-      where: { user: { is: { email: email } }, purpose: "RESET_PASSWORD" },
+      where: {
+        user: { is: { email: normalizedEmail } },
+        purpose: "RESET_PASSWORD",
+      },
     }),
   ]);
+}
+
+export async function changeTemporaryPassword(
+  email: string,
+  temporaryPassword: string,
+  newPassword: string,
+) {
+  const normalizedEmail = email.toLowerCase();
+  const user = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
+
+  if (!user) {
+    throw new Error("INVALID_TEMP_CREDENTIALS");
+  }
+
+  const valid = await bcrypt.compare(temporaryPassword, user.password);
+  if (!valid) {
+    throw new Error("INVALID_TEMP_CREDENTIALS");
+  }
+
+  if (!user.mustChangePassword) {
+    throw new Error("TEMP_PASSWORD_NOT_REQUIRED");
+  }
+
+  if (isTempPasswordExpired(user)) {
+    throw new Error("TEMP_PASSWORD_EXPIRED");
+  }
+
+  const hash = await bcrypt.hash(newPassword, 10);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hash,
+      mustChangePassword: false,
+      tempPasswordExpiresAt: null,
+    },
+  });
 }
 
 export async function logoutUser(userId: string, sessionId: string) {

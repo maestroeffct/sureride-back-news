@@ -45,15 +45,71 @@ async function main() {
     const admin = await prisma_1.prisma.admin.upsert({
         where: { email: adminEmail },
         update: {
+            firstName: "Super",
+            lastName: "Admin",
             password: defaultPasswordHash,
             role: "SUPER_ADMIN",
             isActive: true,
         },
         create: {
+            firstName: "Super",
+            lastName: "Admin",
             email: adminEmail,
             password: defaultPasswordHash,
             role: "SUPER_ADMIN",
             isActive: true,
+        },
+    });
+    const allEmployeePermissions = [
+        "EMPLOYEES_READ",
+        "EMPLOYEES_CREATE",
+        "EMPLOYEES_UPDATE",
+        "EMPLOYEES_SUSPEND",
+        "ROLES_READ",
+        "ROLES_CREATE",
+        "ROLES_UPDATE",
+        "ROLES_DELETE",
+        "PROVIDERS_MANAGE",
+        "CARS_MANAGE",
+        "BOOKINGS_MANAGE",
+        "PROMOTIONS_MANAGE",
+        "SETTINGS_MANAGE",
+    ];
+    const superAdminEmployeeRole = await prisma_1.prisma.employeeRole.upsert({
+        where: { name: "Super Admin" },
+        update: {
+            description: "Full platform control",
+            permissions: [...allEmployeePermissions],
+            isSystem: true,
+        },
+        create: {
+            name: "Super Admin",
+            description: "Full platform control",
+            permissions: [...allEmployeePermissions],
+            isSystem: true,
+        },
+    });
+    await prisma_1.prisma.employeeRole.upsert({
+        where: { name: "Operations Manager" },
+        update: {
+            description: "Operations role",
+            permissions: ["EMPLOYEES_READ", "PROVIDERS_MANAGE", "CARS_MANAGE"],
+            isSystem: false,
+        },
+        create: {
+            name: "Operations Manager",
+            description: "Operations role",
+            permissions: ["EMPLOYEES_READ", "PROVIDERS_MANAGE", "CARS_MANAGE"],
+            isSystem: false,
+        },
+    });
+    await prisma_1.prisma.admin.update({
+        where: { id: admin.id },
+        data: {
+            roleId: superAdminEmployeeRole.id,
+            nationality: "Nigeria",
+            phoneCountry: "+234",
+            phoneNumber: "8000000000",
         },
     });
     // 3️⃣ Locations

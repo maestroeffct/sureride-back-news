@@ -24,9 +24,9 @@ export class StripeGateway implements PaymentGateway {
   provider: PaymentProvider = "STRIPE";
 
   private stripe: Stripe;
-  private webhookSecret: string;
+  private webhookSecret?: string;
 
-  constructor(secretKey: string, webhookSecret: string) {
+  constructor(secretKey: string, webhookSecret?: string) {
     this.stripe = new Stripe(secretKey);
     this.webhookSecret = webhookSecret;
   }
@@ -54,6 +54,10 @@ export class StripeGateway implements PaymentGateway {
   }
 
   parseWebhook(payload: Buffer, signature: string): NormalizedWebhookEvent | null {
+    if (!this.webhookSecret) {
+      throw new Error("STRIPE_WEBHOOK_SECRET_NOT_CONFIGURED");
+    }
+
     const event = this.stripe.webhooks.constructEvent(
       payload,
       signature,

@@ -8,7 +8,7 @@ import kycRoutes from "./modules/kyc/kyc.routes";
 import locationRoutes from "./modules/rental/location/location.routes";
 import featureRoutes from "./modules/rental/feature/feature.routes";
 import paymentRoutes from "./modules/payments/payment.routes";
-import { stripeWebhookController } from "./modules/payments/payment.controller";
+import { paymentWebhookController } from "./modules/payments/payment.controller";
 import adminAuthRoutes from "./admin/admin.auth.routes";
 import providerAuthRoutes from "./modules/provider/provider.auth.routes";
 import providerOnboardingRoutes from "./admin/provider/provider.onboarding.routes";
@@ -20,6 +20,8 @@ import adminProviderRequestRoutes from "./admin/provider-requests/admin.provider
 import providerCarsRoutes from "./modules/provider/cars/provider.cars.routes";
 import usersRoutes from "./modules/users/users.routes";
 import adminUsersRoutes from "./admin/users/admin.users.routes";
+import adminPaymentsRoutes from "./admin/payments/admin.payments.routes";
+import adminEmployeesRoutes from "./admin/employees/admin.employees.routes";
 
 const app = express();
 
@@ -39,9 +41,9 @@ const corsOptions: CorsOptions = {
 app.use(cors(corsOptions));
 
 app.post(
-  "/payments/webhook/stripe",
+  "/payments/webhook/:provider",
   express.raw({ type: "application/json" }),
-  stripeWebhookController,
+  paymentWebhookController,
 );
 
 app.use(express.json());
@@ -74,5 +76,7 @@ app.use("/admin", adminProviderDocsRoutes);
 app.use("/admin", adminPayoutRoutes);
 app.use("/admin", adminProviderRequestRoutes);
 app.use("/admin", adminUsersRoutes);
+app.use("/admin", adminPaymentsRoutes);
+app.use("/admin", adminEmployeesRoutes);
 
 export default app;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminCreateUserController = adminCreateUserController;
 exports.adminListUsersController = adminListUsersController;
 exports.adminGetUserController = adminGetUserController;
 exports.adminUserStatusController = adminUserStatusController;
@@ -34,6 +35,29 @@ function getPublicBaseUrl(req) {
         : req.protocol;
     const host = req.get("host");
     return host ? `${protocol}://${host}` : "";
+}
+/**
+ * POST /admin/users
+ */
+async function adminCreateUserController(req, res) {
+    try {
+        const body = admin_users_validation_1.adminCreateUserSchema.parse(req.body);
+        const result = await (0, admin_users_service_1.adminCreateUser)(body);
+        return res.status(201).json({
+            message: "User created",
+            ...result,
+        });
+    }
+    catch (err) {
+        if (err instanceof zod_1.ZodError)
+            return validationError(res, err);
+        if (err.message === "USER_ALREADY_EXISTS")
+            return res
+                .status(409)
+                .json({ message: "Email or phone number already exists" });
+        console.error(err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
 /**
  * GET /admin/users

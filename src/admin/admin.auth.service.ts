@@ -16,11 +16,18 @@ export async function adminLogin(email: string, password: string) {
 
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-  const session = await prisma.adminSession.create({
-    data: {
-      adminId: admin.id,
-      expiresAt,
-    },
+  const session = await prisma.$transaction(async (tx) => {
+    const createdSession = await tx.adminSession.create({
+      data: {
+        adminId: admin.id,
+        expiresAt,
+      },
+    });
+    await tx.admin.update({
+      where: { id: admin.id },
+      data: { lastLoginAt: new Date() },
+    });
+    return createdSession;
   });
 
   const token = signToken({

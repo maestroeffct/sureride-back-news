@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_payments_controller_1 = require("./admin.payments.controller");
+const router = (0, express_1.Router)();
+router.get("/payments/transactions", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminListPaymentTransactionsController);
+router.get("/payments/gateways", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminListPaymentGatewaysController);
+router.post("/payments/gateways", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminCreatePaymentGatewayController);
+router.patch("/payments/gateways/:provider", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminUpdatePaymentGatewayController);
+router.patch("/payments/gateways/:provider/enable", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminSetPaymentGatewayEnabledController);
+router.patch("/payments/gateways/:provider/default", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminSetDefaultPaymentGatewayController);
+router.get("/payments/settings", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminGetPaymentSettingsController);
+router.patch("/payments/settings", admin_middleware_1.requireAdminAuth, admin_payments_controller_1.adminUpdatePaymentSettingsController);
+exports.default = router;

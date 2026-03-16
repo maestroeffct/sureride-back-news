@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const admin_middleware_1 = require("../../middleware/admin.middleware");
+const admin_employees_controller_1 = require("./admin.employees.controller");
+const router = (0, express_1.Router)();
+router.get("/employee-roles", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminListEmployeeRolesController);
+router.post("/employee-roles", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminCreateEmployeeRoleController);
+router.patch("/employee-roles/:roleId", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminUpdateEmployeeRoleController);
+router.delete("/employee-roles/:roleId", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminDeleteEmployeeRoleController);
+router.get("/employees", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminListEmployeesController);
+router.post("/employees", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminCreateEmployeeController);
+router.patch("/employees/:employeeId/assign-role", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminAssignEmployeeRoleController);
+router.post("/employees/:employeeId/reset-password", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminResetEmployeePasswordController);
+router.patch("/employees/:employeeId/status", admin_middleware_1.requireAdminAuth, admin_employees_controller_1.adminUpdateEmployeeStatusController);
+exports.default = router;

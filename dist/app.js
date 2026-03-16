@@ -25,6 +25,8 @@ const admin_provider_requests_routes_1 = __importDefault(require("./admin/provid
 const provider_cars_routes_1 = __importDefault(require("./modules/provider/cars/provider.cars.routes"));
 const users_routes_1 = __importDefault(require("./modules/users/users.routes"));
 const admin_users_routes_1 = __importDefault(require("./admin/users/admin.users.routes"));
+const admin_payments_routes_1 = __importDefault(require("./admin/payments/admin.payments.routes"));
+const admin_employees_routes_1 = __importDefault(require("./admin/employees/admin.employees.routes"));
 const app = (0, express_1.default)();
 const allowedOrigins = ["http://localhost:3000"];
 const corsOptions = {
@@ -38,7 +40,7 @@ const corsOptions = {
     credentials: true,
 };
 app.use((0, cors_1.default)(corsOptions));
-app.post("/payments/webhook/stripe", express_1.default.raw({ type: "application/json" }), payment_controller_1.stripeWebhookController);
+app.post("/payments/webhook/:provider", express_1.default.raw({ type: "application/json" }), payment_controller_1.paymentWebhookController);
 app.use(express_1.default.json());
 app.get("/", (_req, res) => {
     res.json({ ok: true, message: "SureRide API running" });
@@ -64,4 +66,6 @@ app.use("/admin", admin_providerDocs_routes_1.default);
 app.use("/admin", admin_payout_routes_1.default);
 app.use("/admin", admin_provider_requests_routes_1.default);
 app.use("/admin", admin_users_routes_1.default);
+app.use("/admin", admin_payments_routes_1.default);
+app.use("/admin", admin_employees_routes_1.default);
 exports.default = app;

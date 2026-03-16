@@ -2,11 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPaymentConfigController = getPaymentConfigController;
 exports.createPaymentSheetController = createPaymentSheetController;
-exports.stripeWebhookController = stripeWebhookController;
+exports.paymentWebhookController = paymentWebhookController;
 const payment_service_1 = require("./payment.service");
-async function getPaymentConfigController(_req, res) {
+function getSingleParam(param) {
+    if (!param)
+        return undefined;
+    return Array.isArray(param) ? param[0] : param;
+}
+async function getPaymentConfigController(req, res) {
     try {
-        const config = (0, payment_service_1.getStripeConfig)();
+        const config = await (0, payment_service_1.getClientPaymentConfig)();
         return res.json(config);
     }
     catch (error) {
@@ -40,8 +45,12 @@ async function createPaymentSheetController(req, res) {
         return res.status(500).json({ message: error.message || "Payment setup failed" });
     }
 }
-async function stripeWebhookController(req, res) {
+async function paymentWebhookController(req, res) {
     try {
+        const provider = getSingleParam(req.params.provider);
+        if (!provider) {
+            return res.status(400).json({ message: "Missing payment provider" });
+        }
         const signature = req.headers["stripe-signature"];
         if (!signature || Array.isArray(signature)) {
             return res.status(400).json({ message: "Missing stripe-signature" });
@@ -52,7 +61,7 @@ async function stripeWebhookController(req, res) {
                 message: "Invalid webhook payload. Expected raw request body.",
             });
         }
-        const result = await (0, payment_service_1.handleStripeWebhook)(payload, signature);
+        const result = await (0, payment_service_1.handlePaymentWebhook)(provider, payload, signature);
         return res.json({ received: true, ...result });
     }
     catch (error) {

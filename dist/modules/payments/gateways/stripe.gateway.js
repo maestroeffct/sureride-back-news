@@ -41,6 +41,9 @@ class StripeGateway {
         };
     }
     parseWebhook(payload, signature) {
+        if (!this.webhookSecret) {
+            throw new Error("STRIPE_WEBHOOK_SECRET_NOT_CONFIGURED");
+        }
         const event = this.stripe.webhooks.constructEvent(payload, signature, this.webhookSecret);
         if (!event.type.startsWith("payment_intent.")) {
             return null;

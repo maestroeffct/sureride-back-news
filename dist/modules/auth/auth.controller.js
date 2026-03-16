@@ -7,6 +7,7 @@ exports.resendOtpHandler = resendOtpHandler;
 exports.getMe = getMe;
 exports.forgotPasswordHandler = forgotPasswordHandler;
 exports.verifyResetOtpHandler = verifyResetOtpHandler;
+exports.changeTemporaryPasswordHandler = changeTemporaryPasswordHandler;
 exports.resetPasswordHandler = resetPasswordHandler;
 exports.logout = logout;
 exports.resendForgotPassword = resendForgotPassword;
@@ -99,6 +100,18 @@ async function login(req, res) {
             return res.status(403).json({
                 message: "Account suspended",
                 code: "ACCOUNT_SUSPENDED",
+            });
+        }
+        if (err.message === "PASSWORD_CHANGE_REQUIRED") {
+            return res.status(403).json({
+                message: "Temporary password must be changed before login",
+                code: "PASSWORD_CHANGE_REQUIRED",
+            });
+        }
+        if (err.message === "TEMP_PASSWORD_EXPIRED") {
+            return res.status(403).json({
+                message: "Temporary password has expired. Use forgot password.",
+                code: "TEMP_PASSWORD_EXPIRED",
             });
         }
         return res.status(401).json({
@@ -229,6 +242,47 @@ async function verifyResetOtpHandler(req, res) {
         message: "OTP verified",
         userId,
     });
+}
+async function changeTemporaryPasswordHandler(req, res) {
+    try {
+        const body = auth_validation_1.changeTemporaryPasswordSchema.parse(req.body);
+        await (0, auth_service_1.changeTemporaryPassword)(body.email, body.temporaryPassword, body.newPassword);
+        return res.json({
+            message: "Password changed successfully. You can now sign in.",
+        });
+    }
+    catch (err) {
+        if (err instanceof zod_1.ZodError) {
+            const errors = err.issues.map((e) => ({
+                field: e.path.join("."),
+                message: e.message,
+            }));
+            return res.status(400).json({
+                message: "Validation failed",
+                errors,
+            });
+        }
+        if (err.message === "TEMP_PASSWORD_NOT_REQUIRED") {
+            return res.status(400).json({
+                message: "This account does not require temporary password change. Please sign in normally.",
+                code: "TEMP_PASSWORD_NOT_REQUIRED",
+            });
+        }
+        if (err.message === "TEMP_PASSWORD_EXPIRED") {
+            return res.status(400).json({
+                message: "Temporary password expired. Use forgot password.",
+                code: "TEMP_PASSWORD_EXPIRED",
+            });
+        }
+        if (err.message === "INVALID_TEMP_CREDENTIALS") {
+            return res.status(401).json({
+                message: "Invalid email or temporary password",
+                code: "UNAUTHORIZED",
+            });
+        }
+        console.error(err);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
 async function resetPasswordHandler(req, res) {
     const { email, password } = req.body;

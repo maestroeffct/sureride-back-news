@@ -81,6 +81,18 @@
     {
       "key": "stripeSignature",
       "value": "t=123,v1=test_signature"
+    },
+    {
+      "key": "paymentProvider",
+      "value": "STRIPE"
+    },
+    {
+      "key": "roleId",
+      "value": ""
+    },
+    {
+      "key": "employeeId",
+      "value": ""
     }
   ],
   "item": [
@@ -2008,13 +2020,6 @@
           "response": [
             {
               "name": "Example 200",
-              "originalRequest": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/payments/config"
-                }
-              },
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
@@ -2025,7 +2030,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n  \"provider\": \"STRIPE\",\n  \"publishableKey\": \"pk_test_xxx\",\n  \"merchantDisplayName\": \"SureRide\"\n}"
+              "body": "{\n  \"provider\": \"STRIPE\",\n  \"publishableKey\": \"pk_test_xxx\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"allowsDelayedPaymentMethods\": true,\n  \"defaultCurrency\": \"ngn\",\n  \"mode\": \"TEST\"\n}"
             }
           ]
         },
@@ -4237,6 +4242,607 @@
               ],
               "cookie": [],
               "body": "{\n  \"message\": \"KYC rejected\",\n  \"user\": {\n    \"id\": \"user_123\",\n    \"isVerified\": false,\n    \"profileStatus\": \"REJECTED\",\n    \"kyc\": {\n      \"status\": \"REJECTED\",\n      \"rejectionReason\": \"Document details do not match.\",\n      \"passportPhotoUrl\": \"http://localhost:4000/uploads/passport-file.jpg\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Payments",
+      "item": [
+        {
+          "name": "List Payment Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/transactions?page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"booking_123\",\n      \"paymentProvider\": \"STRIPE\",\n      \"paymentStatus\": \"SUCCEEDED\",\n      \"paymentReference\": \"pi_123\",\n      \"totalPrice\": 25000,\n      \"currency\": \"ngn\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Payment Gateways",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"items\": [\n    {\n      \"provider\": \"STRIPE\",\n      \"displayName\": \"Stripe\",\n      \"isEnabled\": true,\n      \"isDefault\": true,\n      \"mode\": \"TEST\",\n      \"hasSecretKey\": true,\n      \"hasWebhookSecret\": true,\n      \"isRuntimeSupported\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Payment Gateway",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"STRIPE\",\n  \"displayName\": \"Stripe\",\n  \"mode\": \"TEST\",\n  \"isEnabled\": true,\n  \"isDefault\": true,\n  \"publishableKey\": \"pk_test_xxx\",\n  \"secretKey\": \"sk_test_xxx\",\n  \"webhookSecret\": \"whsec_xxx\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"supportedCurrencies\": [\n    \"ngn\",\n    \"usd\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payment gateway created\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isEnabled\": true,\n    \"isDefault\": true,\n    \"mode\": \"TEST\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Payment Gateway",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Stripe (Primary)\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"publishableKey\": \"pk_test_new\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payment gateway updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"displayName\": \"Stripe (Primary)\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Enable/Disable Payment Gateway",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}/enable"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isEnabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payment gateway status updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isEnabled\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Default Payment Gateway",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}/default"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Default payment gateway updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isDefault\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/settings"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"GLOBAL\",\n  \"defaultCurrency\": \"ngn\",\n  \"allowDelayedPaymentMethods\": true,\n  \"bookingAutoCancelMinutes\": 30\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Payment Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/settings"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"defaultCurrency\": \"ngn\",\n  \"allowDelayedPaymentMethods\": true,\n  \"bookingAutoCancelMinutes\": 45\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"message\": \"Payment settings updated\",\n  \"settings\": {\n    \"id\": \"GLOBAL\",\n    \"defaultCurrency\": \"ngn\",\n    \"allowDelayedPaymentMethods\": true,\n    \"bookingAutoCancelMinutes\": 45\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Employee Roles",
+      "item": [
+        {
+          "name": "List Employee Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employee-roles"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "[\n  {\n    \"id\": \"role-super-admin\",\n    \"name\": \"Super Admin\",\n    \"description\": \"Full platform control\",\n    \"permissions\": [\n      \"employees.read\",\n      \"roles.read\"\n    ],\n    \"isSystem\": true,\n    \"userCount\": 3,\n    \"createdAt\": \"2026-03-15T10:00:00.000Z\",\n    \"updatedAt\": \"2026-03-15T10:00:00.000Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Employee Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employee-roles"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Operations Manager\",\n  \"description\": \"Ops role\",\n  \"permissions\": [\n    \"employees.read\",\n    \"providers.manage\",\n    \"cars.manage\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"role-uuid\",\n  \"name\": \"Operations Manager\",\n  \"description\": \"Ops role\",\n  \"permissions\": [\n    \"employees.read\",\n    \"providers.manage\",\n    \"cars.manage\"\n  ],\n  \"isSystem\": false,\n  \"userCount\": 0,\n  \"createdAt\": \"2026-03-15T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-15T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Employee Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employee-roles/{{roleId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ops Manager\",\n  \"description\": \"Updated\",\n  \"permissions\": [\n    \"employees.read\",\n    \"cars.manage\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Employee Role",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employee-roles/{{roleId}}"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Role deleted\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Employees",
+      "item": [
+        {
+          "name": "List Employees",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employees?page=1&limit=100"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"user-id\",\n      \"firstName\": \"Jane\",\n      \"lastName\": \"Doe\",\n      \"email\": \"jane@sureride.com\",\n      \"phoneCountry\": \"+234\",\n      \"phoneNumber\": \"8012345678\",\n      \"nationality\": \"Nigeria\",\n      \"isActive\": true,\n      \"createdAt\": \"2026-03-15T10:00:00.000Z\",\n      \"updatedAt\": \"2026-03-15T10:00:00.000Z\",\n      \"lastLoginAt\": \"2026-03-15T12:00:00.000Z\",\n      \"roleId\": \"role-uuid\",\n      \"roleName\": \"Operations Manager\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 100,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employees"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Precious\",\n  \"lastName\": \"Maestro\",\n  \"email\": \"precious@sureride.com\",\n  \"phoneCountry\": \"+234\",\n  \"phoneNumber\": \"8012345678\",\n  \"nationality\": \"Nigeria\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"password\": \"optional\",\n  \"roleId\": \"{{roleId}}\",\n  \"sendInvite\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Employee created\",\n  \"employee\": {\n    \"id\": \"user-id\",\n    \"firstName\": \"Precious\",\n    \"lastName\": \"Maestro\",\n    \"email\": \"precious@sureride.com\",\n    \"phoneCountry\": \"+234\",\n    \"phoneNumber\": \"8012345678\",\n    \"nationality\": \"Nigeria\",\n    \"isActive\": true,\n    \"createdAt\": \"2026-03-15T10:00:00.000Z\",\n    \"updatedAt\": \"2026-03-15T10:00:00.000Z\",\n    \"lastLoginAt\": null,\n    \"roleId\": \"role-uuid\",\n    \"roleName\": \"Operations Manager\"\n  },\n  \"inviteEmailSent\": true,\n  \"temporaryPasswordGenerated\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "Assign Employee Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employees/{{employeeId}}/assign-role"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleId\": \"{{roleId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Role assigned\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Employee Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employees/{{employeeId}}/reset-password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sendEmail\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Password reset initiated\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Employee Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employees/{{employeeId}}/status"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Employee status updated\"\n}"
             }
           ]
         }

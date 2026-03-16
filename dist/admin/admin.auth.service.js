@@ -19,11 +19,18 @@ async function adminLogin(email, password) {
     if (!ok)
         throw new Error("INVALID_CREDENTIALS");
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    const session = await prisma_1.prisma.adminSession.create({
-        data: {
-            adminId: admin.id,
-            expiresAt,
-        },
+    const session = await prisma_1.prisma.$transaction(async (tx) => {
+        const createdSession = await tx.adminSession.create({
+            data: {
+                adminId: admin.id,
+                expiresAt,
+            },
+        });
+        await tx.admin.update({
+            where: { id: admin.id },
+            data: { lastLoginAt: new Date() },
+        });
+        return createdSession;
     });
     const token = (0, jwt_1.signToken)({
         type: "ADMIN",

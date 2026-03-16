@@ -7,12 +7,20 @@ exports.registerUser = registerUser;
 exports.loginUser = loginUser;
 exports.forgotPassword = forgotPassword;
 exports.resetPassword = resetPassword;
+exports.changeTemporaryPassword = changeTemporaryPassword;
 exports.logoutUser = logoutUser;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = require("../../prisma");
 const otp_service_1 = require("./otp.service");
 const jwt_1 = require("../../utils/jwt");
 const maskPhone_1 = require("../../utils/maskPhone");
+function isTempPasswordExpired(user) {
+    if (!user.mustChangePassword)
+        return false;
+    if (!user.tempPasswordExpiresAt)
+        return false;
+    return user.tempPasswordExpiresAt.getTime() < Date.now();
+}
 async function registerUser(data) {
     const hashedPassword = await bcryptjs_1.default.hash(data.password, 10);
     // ✅ split phone into country code + number
@@ -62,6 +70,12 @@ async function loginUser(email, password) {
     if (!isMatch) {
         throw new Error("INVALID_CREDENTIALS");
     }
+    if (isTempPasswordExpired(user)) {
+        throw new Error("TEMP_PASSWORD_EXPIRED");
+    }
+    if (user.mustChangePassword) {
+        throw new Error("PASSWORD_CHANGE_REQUIRED");
+    }
     // 🔒 Not verified → send OTP
     if (!user.isVerified) {
         const otp = await (0, otp_service_1.generateOtp)(user.id, "VERIFY_ACCOUNT");
@@ -106,16 +120,52 @@ async function forgotPassword(email) {
     await (0, otp_service_1.sendOtpEmail)(user.email, otp.code);
 }
 async function resetPassword(email, password) {
+    const normalizedEmail = email.toLowerCase();
     const hashed = await bcryptjs_1.default.hash(password, 10);
     await prisma_1.prisma.$transaction([
         prisma_1.prisma.user.update({
-            where: { email: email },
-            data: { password: hashed },
+            where: { email: normalizedEmail },
+            data: {
+                password: hashed,
+                mustChangePassword: false,
+                tempPasswordExpiresAt: null,
+            },
         }),
         prisma_1.prisma.otp.deleteMany({
-            where: { user: { is: { email: email } }, purpose: "RESET_PASSWORD" },
+            where: {
+                user: { is: { email: normalizedEmail } },
+                purpose: "RESET_PASSWORD",
+            },
         }),
     ]);
+}
+async function changeTemporaryPassword(email, temporaryPassword, newPassword) {
+    const normalizedEmail = email.toLowerCase();
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { email: normalizedEmail },
+    });
+    if (!user) {
+        throw new Error("INVALID_TEMP_CREDENTIALS");
+    }
+    const valid = await bcryptjs_1.default.compare(temporaryPassword, user.password);
+    if (!valid) {
+        throw new Error("INVALID_TEMP_CREDENTIALS");
+    }
+    if (!user.mustChangePassword) {
+        throw new Error("TEMP_PASSWORD_NOT_REQUIRED");
+    }
+    if (isTempPasswordExpired(user)) {
+        throw new Error("TEMP_PASSWORD_EXPIRED");
+    }
+    const hash = await bcryptjs_1.default.hash(newPassword, 10);
+    await prisma_1.prisma.user.update({
+        where: { id: user.id },
+        data: {
+            password: hash,
+            mustChangePassword: false,
+            tempPasswordExpiresAt: null,
+        },
+    });
 }
 async function logoutUser(userId, sessionId) {
     await prisma_1.prisma.session.updateMany({

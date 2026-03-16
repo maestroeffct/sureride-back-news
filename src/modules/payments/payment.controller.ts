@@ -1,13 +1,18 @@
 import { Request, Response } from "express";
 import {
   createStripePaymentSheetSession,
-  getStripeConfig,
-  handleStripeWebhook,
+  getClientPaymentConfig,
+  handlePaymentWebhook,
 } from "./payment.service";
 
-export async function getPaymentConfigController(_req: Request, res: Response) {
+function getSingleParam(param: string | string[] | undefined) {
+  if (!param) return undefined;
+  return Array.isArray(param) ? param[0] : param;
+}
+
+export async function getPaymentConfigController(req: Request, res: Response) {
   try {
-    const config = getStripeConfig();
+    const config = await getClientPaymentConfig();
     return res.json(config);
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -48,8 +53,13 @@ export async function createPaymentSheetController(req: Request, res: Response) 
   }
 }
 
-export async function stripeWebhookController(req: Request, res: Response) {
+export async function paymentWebhookController(req: Request, res: Response) {
   try {
+    const provider = getSingleParam(req.params.provider);
+    if (!provider) {
+      return res.status(400).json({ message: "Missing payment provider" });
+    }
+
     const signature = req.headers["stripe-signature"];
     if (!signature || Array.isArray(signature)) {
       return res.status(400).json({ message: "Missing stripe-signature" });
@@ -62,7 +72,7 @@ export async function stripeWebhookController(req: Request, res: Response) {
       });
     }
 
-    const result = await handleStripeWebhook(payload, signature);
+    const result = await handlePaymentWebhook(provider, payload, signature);
     return res.json({ received: true, ...result });
   } catch (error: any) {
     return res.status(400).json({ message: error.message || "Webhook failed" });

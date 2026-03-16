@@ -12,6 +12,7 @@ router.get("/me", auth_middleware_1.requireAuth, auth_controller_1.getMe);
 router.post("/forgot-password", auth_controller_1.forgotPasswordHandler);
 router.post("/verify-reset-otp", auth_controller_1.verifyResetOtpHandler);
 router.post("/reset-password", auth_controller_1.resetPasswordHandler);
+router.post("/change-temporary-password", auth_controller_1.changeTemporaryPasswordHandler);
 router.post("/forgot-password/resend", auth_controller_1.resendForgotPassword);
 router.post("/logout", auth_middleware_1.requireAuth, auth_controller_1.logout);
 exports.default = router;

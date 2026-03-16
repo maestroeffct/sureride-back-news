@@ -49,7 +49,11 @@ async function updateUserPassword(userId, oldPassword, newPassword) {
     const hash = await bcryptjs_1.default.hash(newPassword, 10);
     await prisma_1.prisma.user.update({
         where: { id: userId },
-        data: { password: hash },
+        data: {
+            password: hash,
+            mustChangePassword: false,
+            tempPasswordExpiresAt: null,
+        },
     });
     return { message: "Password updated successfully" };
 }

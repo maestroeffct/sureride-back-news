@@ -4,6 +4,7 @@ const express_1 = require("express");
 const admin_middleware_1 = require("../../middleware/admin.middleware");
 const admin_users_controller_1 = require("./admin.users.controller");
 const router = (0, express_1.Router)();
+router.post("/users", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminCreateUserController);
 router.get("/users", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminListUsersController);
 router.get("/users/:userId", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminGetUserController);
 router.patch("/users/:userId/status", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminUserStatusController);

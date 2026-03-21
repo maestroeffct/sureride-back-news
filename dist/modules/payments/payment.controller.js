@@ -15,7 +15,10 @@ async function getPaymentConfigController(req, res) {
         return res.json(config);
     }
     catch (error) {
-        return res.status(500).json({ message: error.message });
+        if (error?.message === "GATEWAY_NOT_FOUND") {
+            return res.status(404).json({ message: "GATEWAY_NOT_FOUND" });
+        }
+        return res.status(500).json({ message: error?.message || "PAYMENT_CONFIG_FAILED" });
     }
 }
 async function createPaymentSheetController(req, res) {
@@ -28,9 +31,11 @@ async function createPaymentSheetController(req, res) {
         if (!bookingId) {
             return res.status(400).json({ message: "bookingId is required" });
         }
-        const result = await (0, payment_service_1.createStripePaymentSheetSession)({
+        const gatewayKey = req.body?.gatewayKey;
+        const result = await (0, payment_service_1.createPaymentSheetSession)({
             bookingId,
             userId,
+            gatewayKey,
         });
         return res.json(result);
     }
@@ -40,6 +45,14 @@ async function createPaymentSheetController(req, res) {
         }
         if (error.message === "BOOKING_NOT_PAYABLE" ||
             error.message === "BOOKING_ALREADY_PAID") {
+            return res.status(400).json({ message: error.message });
+        }
+        if (error.message === "GATEWAY_NOT_FOUND") {
+            return res.status(404).json({ message: "GATEWAY_NOT_FOUND" });
+        }
+        if (error.message === "GATEWAY_NOT_ENABLED" ||
+            error.message === "GATEWAY_RUNTIME_NOT_IMPLEMENTED" ||
+            error.message === "GATEWAY_REQUIRED_VALUES_MISSING") {
             return res.status(400).json({ message: error.message });
         }
         return res.status(500).json({ message: error.message || "Payment setup failed" });

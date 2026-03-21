@@ -1,6 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { prisma } from "../src/prisma";
+import { encryptSecret } from "../src/modules/payments/payment-secrets";
 
 async function main() {
   const now = new Date();
@@ -115,6 +116,182 @@ async function main() {
       phoneNumber: "8000000000",
     },
   });
+
+  // 2️⃣c Payment Gateway (Option B)
+  const stripePublishable = process.env.STRIPE_PUBLISHABLE_KEY || null;
+  const stripeSecret = process.env.STRIPE_SECRET_KEY || null;
+  const stripeWebhook = process.env.STRIPE_WEBHOOK_SECRET || null;
+  const stripeReady = Boolean(stripePublishable && stripeSecret);
+
+  const stripeGateway = await prisma.paymentGateway.upsert({
+    where: { key: "stripe" },
+    update: {
+      displayName: "Stripe",
+      runtimeAdapter: "STRIPE",
+      mode: "TEST",
+      isEnabled: stripeReady,
+      isDefault: stripeReady,
+      merchantDisplayName: process.env.STRIPE_MERCHANT_NAME || "SureRide",
+      supportedCurrencies: ["ngn"],
+      isArchived: false,
+    },
+    create: {
+      key: "stripe",
+      displayName: "Stripe",
+      runtimeAdapter: "STRIPE",
+      mode: "TEST",
+      isEnabled: stripeReady,
+      isDefault: stripeReady,
+      merchantDisplayName: process.env.STRIPE_MERCHANT_NAME || "SureRide",
+      supportedCurrencies: ["ngn"],
+    },
+  });
+
+  if (stripeReady) {
+    await prisma.paymentGateway.updateMany({
+      where: {
+        key: { not: "stripe" },
+      },
+      data: {
+        isDefault: false,
+      },
+    });
+  }
+
+  const stripeFieldPublishable = await prisma.paymentGatewayField.upsert({
+    where: {
+      gatewayId_key: {
+        gatewayId: stripeGateway.id,
+        key: "publishable_key",
+      },
+    },
+    update: {
+      label: "Publishable Key",
+      type: "TEXT",
+      isRequired: true,
+      isSecret: false,
+      sortOrder: 1,
+    },
+    create: {
+      gatewayId: stripeGateway.id,
+      key: "publishable_key",
+      label: "Publishable Key",
+      type: "TEXT",
+      isRequired: true,
+      isSecret: false,
+      sortOrder: 1,
+    },
+  });
+
+  const stripeFieldSecret = await prisma.paymentGatewayField.upsert({
+    where: {
+      gatewayId_key: {
+        gatewayId: stripeGateway.id,
+        key: "secret_key",
+      },
+    },
+    update: {
+      label: "Secret Key",
+      type: "SECRET",
+      isRequired: true,
+      isSecret: true,
+      sortOrder: 2,
+    },
+    create: {
+      gatewayId: stripeGateway.id,
+      key: "secret_key",
+      label: "Secret Key",
+      type: "SECRET",
+      isRequired: true,
+      isSecret: true,
+      sortOrder: 2,
+    },
+  });
+
+  const stripeFieldWebhook = await prisma.paymentGatewayField.upsert({
+    where: {
+      gatewayId_key: {
+        gatewayId: stripeGateway.id,
+        key: "webhook_secret",
+      },
+    },
+    update: {
+      label: "Webhook Secret",
+      type: "SECRET",
+      isRequired: false,
+      isSecret: true,
+      sortOrder: 3,
+    },
+    create: {
+      gatewayId: stripeGateway.id,
+      key: "webhook_secret",
+      label: "Webhook Secret",
+      type: "SECRET",
+      isRequired: false,
+      isSecret: true,
+      sortOrder: 3,
+    },
+  });
+
+  if (stripePublishable) {
+    await prisma.paymentGatewayFieldValue.upsert({
+      where: {
+        gatewayId_fieldId: {
+          gatewayId: stripeGateway.id,
+          fieldId: stripeFieldPublishable.id,
+        },
+      },
+      update: {
+        valuePlain: stripePublishable,
+        valueEncrypted: null,
+      },
+      create: {
+        gatewayId: stripeGateway.id,
+        fieldId: stripeFieldPublishable.id,
+        valuePlain: stripePublishable,
+      },
+    });
+  }
+
+  if (stripeSecret) {
+    await prisma.paymentGatewayFieldValue.upsert({
+      where: {
+        gatewayId_fieldId: {
+          gatewayId: stripeGateway.id,
+          fieldId: stripeFieldSecret.id,
+        },
+      },
+      update: {
+        valuePlain: null,
+        valueEncrypted: encryptSecret(stripeSecret),
+      },
+      create: {
+        gatewayId: stripeGateway.id,
+        fieldId: stripeFieldSecret.id,
+        valueEncrypted: encryptSecret(stripeSecret),
+      },
+    });
+  }
+
+  if (stripeWebhook) {
+    await prisma.paymentGatewayFieldValue.upsert({
+      where: {
+        gatewayId_fieldId: {
+          gatewayId: stripeGateway.id,
+          fieldId: stripeFieldWebhook.id,
+        },
+      },
+      update: {
+        valuePlain: null,
+        valueEncrypted: encryptSecret(stripeWebhook),
+      },
+      create: {
+        gatewayId: stripeGateway.id,
+        fieldId: stripeFieldWebhook.id,
+        valueEncrypted: encryptSecret(stripeWebhook),
+      },
+    });
+  }
 
   // 3️⃣ Locations
   const ikejaExisting = await prisma.location.findFirst({

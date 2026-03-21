@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
+import path from "path";
 import { ZodError } from "zod";
 import {
   createPaymentGatewaySchema,
   listPaymentTransactionsQuerySchema,
-  paymentGatewayProviderParamSchema,
+  paymentGatewayKeyParamSchema,
+  replacePaymentGatewayFieldsSchema,
+  replacePaymentGatewayValuesSchema,
   togglePaymentGatewaySchema,
   updatePaymentGatewaySchema,
   updatePaymentSettingsSchema,
@@ -13,20 +16,65 @@ import {
   getAdminPaymentSettings,
   listAdminPaymentGateways,
   listAdminPaymentTransactions,
+  replaceAdminPaymentGatewayFields,
+  replaceAdminPaymentGatewayValues,
   setAdminDefaultPaymentGateway,
   setAdminPaymentGatewayEnabled,
+  softDeleteAdminPaymentGateway,
   updateAdminPaymentGateway,
+  updateAdminPaymentGatewayLogo,
   updateAdminPaymentSettings,
 } from "./admin.payments.service";
 
 function validationError(res: Response, err: ZodError) {
   return res.status(400).json({
-    message: "Validation failed",
+    message: "VALIDATION_FAILED",
     errors: err.issues.map((e) => ({
       field: e.path.join("."),
       message: e.message,
     })),
   });
+}
+
+function mapGatewayErrorStatus(errorCode: string) {
+  if (errorCode === "GATEWAY_NOT_FOUND") return 404;
+  if (errorCode === "GATEWAY_FIELD_NOT_FOUND") return 404;
+  if (errorCode === "GATEWAY_KEY_ALREADY_EXISTS") return 409;
+  if (errorCode === "GATEWAY_FIELD_KEY_CONFLICT") return 409;
+  if (errorCode === "GATEWAY_DEFAULT_DISABLE_FORBIDDEN") return 409;
+  if (errorCode === "GATEWAY_DEFAULT_DELETE_FORBIDDEN") return 409;
+  if (errorCode === "GATEWAY_NOT_ENABLED") return 400;
+  if (errorCode === "GATEWAY_RUNTIME_NOT_IMPLEMENTED") return 400;
+  if (errorCode === "GATEWAY_REQUIRED_VALUES_MISSING") return 400;
+  return 500;
+}
+
+function gatewayError(res: Response, error: unknown, fallbackMessage: string) {
+  if (error instanceof ZodError) return validationError(res, error);
+
+  const message =
+    error instanceof Error && error.message ? error.message : fallbackMessage;
+  const status = mapGatewayErrorStatus(message);
+
+  if (status === 500) {
+    console.error(error);
+  }
+
+  return res.status(status).json({ message });
+}
+
+function getPublicBaseUrl(req: Request) {
+  if (process.env.PUBLIC_BASE_URL) {
+    return process.env.PUBLIC_BASE_URL.replace(/\/+$/, "");
+  }
+
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol =
+    typeof forwardedProto === "string"
+      ? forwardedProto.split(",")[0]
+      : req.protocol;
+  const host = req.get("host");
+  return host ? `${protocol}://${host}` : "";
 }
 
 export async function adminListPaymentGatewaysController(
@@ -38,7 +86,7 @@ export async function adminListPaymentGatewaysController(
     return res.json({ items: gateways });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Failed to list payment gateways" });
+    return res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
   }
 }
 
@@ -48,25 +96,13 @@ export async function adminCreatePaymentGatewayController(
 ) {
   try {
     const body = createPaymentGatewaySchema.parse(req.body);
-    const gateway = await createAdminPaymentGateway(body);
-
-    return res.status(201).json({
-      message: "Payment gateway created",
-      gateway,
+    const gateway = await createAdminPaymentGateway({
+      ...body,
+      updatedByAdminId: req.user?.adminId,
     });
-  } catch (error: any) {
-    if (error instanceof ZodError) return validationError(res, error);
-    if (error.message === "PAYMENT_GATEWAY_ALREADY_EXISTS") {
-      return res.status(409).json({ message: "Gateway already exists" });
-    }
-    if (error.message === "PAYMENT_PROVIDER_NOT_IMPLEMENTED") {
-      return res
-        .status(400)
-        .json({ message: "Provider exists but runtime integration is not yet implemented" });
-    }
-
-    console.error(error);
-    return res.status(500).json({ message: "Failed to create payment gateway" });
+    return res.status(201).json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
   }
 }
 
@@ -75,30 +111,43 @@ export async function adminUpdatePaymentGatewayController(
   res: Response,
 ) {
   try {
-    const { provider } = paymentGatewayProviderParamSchema.parse(req.params);
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
     const body = updatePaymentGatewaySchema.parse(req.body);
-    const gateway = await updateAdminPaymentGateway(provider, body);
+    const gateway = await updateAdminPaymentGateway(key, body);
+    return res.json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
+  }
+}
 
-    return res.json({
-      message: "Payment gateway updated",
-      gateway,
+export async function adminReplacePaymentGatewayFieldsController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
+    const body = replacePaymentGatewayFieldsSchema.parse(req.body);
+    const gateway = await replaceAdminPaymentGatewayFields(key, body);
+    return res.json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
+  }
+}
+
+export async function adminReplacePaymentGatewayValuesController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
+    const body = replacePaymentGatewayValuesSchema.parse(req.body);
+    const gateway = await replaceAdminPaymentGatewayValues(key, {
+      ...body,
+      updatedByAdminId: req.user?.adminId,
     });
-  } catch (error: any) {
-    if (error instanceof ZodError) return validationError(res, error);
-    if (error.message === "PAYMENT_GATEWAY_NOT_FOUND") {
-      return res.status(404).json({ message: "Gateway not found" });
-    }
-    if (error.message === "DEFAULT_GATEWAY_DISABLE_FORBIDDEN") {
-      return res.status(400).json({ message: "Default gateway cannot be disabled" });
-    }
-    if (error.message === "PAYMENT_PROVIDER_NOT_IMPLEMENTED") {
-      return res
-        .status(400)
-        .json({ message: "Provider exists but runtime integration is not yet implemented" });
-    }
-
-    console.error(error);
-    return res.status(500).json({ message: "Failed to update payment gateway" });
+    return res.json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
   }
 }
 
@@ -107,27 +156,12 @@ export async function adminSetPaymentGatewayEnabledController(
   res: Response,
 ) {
   try {
-    const { provider } = paymentGatewayProviderParamSchema.parse(req.params);
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
     const body = togglePaymentGatewaySchema.parse(req.body);
-    const gateway = await setAdminPaymentGatewayEnabled(provider, body.isEnabled);
-
-    return res.json({
-      message: "Payment gateway status updated",
-      gateway,
-    });
-  } catch (error: any) {
-    if (error instanceof ZodError) return validationError(res, error);
-    if (error.message === "PAYMENT_GATEWAY_NOT_FOUND") {
-      return res.status(404).json({ message: "Gateway not found" });
-    }
-    if (error.message === "DEFAULT_GATEWAY_DISABLE_FORBIDDEN") {
-      return res.status(400).json({ message: "Default gateway cannot be disabled" });
-    }
-
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to update payment gateway status" });
+    const gateway = await setAdminPaymentGatewayEnabled(key, body.isEnabled);
+    return res.json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
   }
 }
 
@@ -136,31 +170,50 @@ export async function adminSetDefaultPaymentGatewayController(
   res: Response,
 ) {
   try {
-    const { provider } = paymentGatewayProviderParamSchema.parse(req.params);
-    const gateway = await setAdminDefaultPaymentGateway(provider);
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
+    const gateway = await setAdminDefaultPaymentGateway(key);
+    return res.json(gateway);
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
+  }
+}
 
-    return res.json({
-      message: "Default payment gateway updated",
-      gateway,
-    });
-  } catch (error: any) {
-    if (error instanceof ZodError) return validationError(res, error);
-    if (error.message === "PAYMENT_GATEWAY_NOT_FOUND") {
-      return res.status(404).json({ message: "Gateway not found" });
-    }
-    if (error.message === "PAYMENT_GATEWAY_NOT_ENABLED") {
-      return res.status(400).json({ message: "Gateway must be enabled first" });
-    }
-    if (error.message === "PAYMENT_PROVIDER_NOT_IMPLEMENTED") {
-      return res
-        .status(400)
-        .json({ message: "Provider exists but runtime integration is not yet implemented" });
+export async function adminDeletePaymentGatewayController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
+    await softDeleteAdminPaymentGateway(key);
+    return res.json({ message: "Gateway archived" });
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
+  }
+}
+
+export async function adminUploadPaymentGatewayLogoController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const { key } = paymentGatewayKeyParamSchema.parse(req.params);
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "VALIDATION_FAILED" });
     }
 
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to update default payment gateway" });
+    const extension = path.extname(file.originalname || "").toLowerCase();
+    const allowed = new Set([".png", ".jpg", ".jpeg", ".webp", ".svg"]);
+    if (extension && !allowed.has(extension)) {
+      return res.status(400).json({ message: "VALIDATION_FAILED" });
+    }
+
+    const logoUrl = `${getPublicBaseUrl(req)}/uploads/${file.filename}`;
+    const gateway = await updateAdminPaymentGatewayLogo(key, logoUrl);
+    return res.json({ logoUrl: gateway.logoUrl });
+  } catch (error) {
+    return gatewayError(res, error, "INTERNAL_SERVER_ERROR");
   }
 }
 
@@ -173,7 +226,7 @@ export async function adminGetPaymentSettingsController(
     return res.json(settings);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: "Failed to fetch payment settings" });
+    return res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
   }
 }
 
@@ -184,16 +237,14 @@ export async function adminUpdatePaymentSettingsController(
   try {
     const body = updatePaymentSettingsSchema.parse(req.body);
     const settings = await updateAdminPaymentSettings(body);
-
     return res.json({
       message: "Payment settings updated",
       settings,
     });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ZodError) return validationError(res, error);
-
     console.error(error);
-    return res.status(500).json({ message: "Failed to update payment settings" });
+    return res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
   }
 }
 
@@ -205,12 +256,9 @@ export async function adminListPaymentTransactionsController(
     const query = listPaymentTransactionsQuerySchema.parse(req.query);
     const result = await listAdminPaymentTransactions(query);
     return res.json(result);
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ZodError) return validationError(res, error);
-
     console.error(error);
-    return res
-      .status(500)
-      .json({ message: "Failed to fetch payment transactions" });
+    return res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
   }
 }

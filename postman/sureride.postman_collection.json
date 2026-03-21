@@ -93,6 +93,10 @@
     {
       "key": "employeeId",
       "value": ""
+    },
+    {
+      "key": "gatewayKey",
+      "value": "stripe"
     }
   ],
   "item": [
@@ -2023,14 +2027,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"provider\": \"STRIPE\",\n  \"publishableKey\": \"pk_test_xxx\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"allowsDelayedPaymentMethods\": true,\n  \"defaultCurrency\": \"ngn\",\n  \"mode\": \"TEST\"\n}"
+              "body": "{\n  \"gatewayKey\": \"stripe\",\n  \"displayName\": \"Stripe\",\n  \"logoUrl\": null,\n  \"runtimeAdapter\": \"STRIPE\",\n  \"isRuntimeSupported\": true,\n  \"mode\": \"TEST\",\n  \"supportedCurrencies\": [\n    \"ngn\"\n  ],\n  \"merchantDisplayName\": \"SureRide\",\n  \"publishableKey\": \"pk_test_xxx\",\n  \"provider\": \"STRIPE\",\n  \"allowsDelayedPaymentMethods\": true,\n  \"defaultCurrency\": \"ngn\"\n}"
             }
           ]
         },
@@ -2053,7 +2050,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"bookingId\": \"{{bookingId}}\"\n}",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"gatewayKey\": \"stripe\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4264,22 +4261,7 @@
               "raw": "{{baseUrl}}/admin/payments/transactions?page=1&limit=20"
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"booking_123\",\n      \"paymentProvider\": \"STRIPE\",\n      \"paymentStatus\": \"SUCCEEDED\",\n      \"paymentReference\": \"pi_123\",\n      \"totalPrice\": 25000,\n      \"currency\": \"ngn\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "List Payment Gateways",
@@ -4295,22 +4277,7 @@
               "raw": "{{baseUrl}}/admin/payments/gateways"
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"items\": [\n    {\n      \"provider\": \"STRIPE\",\n      \"displayName\": \"Stripe\",\n      \"isEnabled\": true,\n      \"isDefault\": true,\n      \"mode\": \"TEST\",\n      \"hasSecretKey\": true,\n      \"hasWebhookSecret\": true,\n      \"isRuntimeSupported\": true\n    }\n  ]\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "Create Payment Gateway",
@@ -4331,7 +4298,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"provider\": \"STRIPE\",\n  \"displayName\": \"Stripe\",\n  \"mode\": \"TEST\",\n  \"isEnabled\": true,\n  \"isDefault\": true,\n  \"publishableKey\": \"pk_test_xxx\",\n  \"secretKey\": \"sk_test_xxx\",\n  \"webhookSecret\": \"whsec_xxx\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"supportedCurrencies\": [\n    \"ngn\",\n    \"usd\"\n  ]\n}",
+              "raw": "{\n  \"key\": \"monnify\",\n  \"displayName\": \"Monnify\",\n  \"logoUrl\": \"https://example.com/monnify.png\",\n  \"runtimeAdapter\": \"CUSTOM\",\n  \"mode\": \"TEST\",\n  \"isEnabled\": false,\n  \"isDefault\": false,\n  \"merchantDisplayName\": \"SureRide\",\n  \"supportedCurrencies\": [\n    \"ngn\"\n  ],\n  \"fields\": [\n    {\n      \"key\": \"public_key\",\n      \"label\": \"Public Key\",\n      \"type\": \"TEXT\",\n      \"isRequired\": true,\n      \"isSecret\": false,\n      \"sortOrder\": 1\n    },\n    {\n      \"key\": \"secret_key\",\n      \"label\": \"Secret Key\",\n      \"type\": \"SECRET\",\n      \"isRequired\": true,\n      \"isSecret\": true,\n      \"sortOrder\": 2\n    }\n  ],\n  \"values\": [\n    {\n      \"fieldKey\": \"public_key\",\n      \"value\": \"pk_test_xxx\"\n    },\n    {\n      \"fieldKey\": \"secret_key\",\n      \"value\": \"sk_test_xxx\"\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4339,22 +4306,7 @@
               }
             }
           },
-          "response": [
-            {
-              "name": "Example 201",
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Payment gateway created\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isEnabled\": true,\n    \"isDefault\": true,\n    \"mode\": \"TEST\"\n  }\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "Update Payment Gateway",
@@ -4371,11 +4323,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}"
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}"
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"displayName\": \"Stripe (Primary)\",\n  \"merchantDisplayName\": \"SureRide\",\n  \"publishableKey\": \"pk_test_new\"\n}",
+              "raw": "{\n  \"displayName\": \"Monnify NG\",\n  \"supportedCurrencies\": [\n    \"ngn\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4383,22 +4335,65 @@
               }
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
+          "response": []
+        },
+        {
+          "name": "Replace Gateway Fields",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}/fields"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fields\": [\n    {\n      \"key\": \"public_key\",\n      \"label\": \"Public Key\",\n      \"type\": \"TEXT\",\n      \"isRequired\": true,\n      \"isSecret\": false,\n      \"sortOrder\": 1\n    },\n    {\n      \"key\": \"secret_key\",\n      \"label\": \"Secret Key\",\n      \"type\": \"SECRET\",\n      \"isRequired\": true,\n      \"isSecret\": true,\n      \"sortOrder\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Payment gateway updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"displayName\": \"Stripe (Primary)\"\n  }\n}"
+              }
             }
-          ]
+          },
+          "response": []
+        },
+        {
+          "name": "Replace Gateway Values",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}/values"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"values\": [\n    {\n      \"fieldKey\": \"public_key\",\n      \"value\": \"pk_test_xxx\"\n    },\n    {\n      \"fieldKey\": \"secret_key\",\n      \"value\": \"sk_test_xxx\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
         },
         {
           "name": "Enable/Disable Payment Gateway",
@@ -4415,7 +4410,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}/enable"
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}/enable"
             },
             "body": {
               "mode": "raw",
@@ -4427,22 +4422,7 @@
               }
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Payment gateway status updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isEnabled\": true\n  }\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "Set Default Payment Gateway",
@@ -4452,10 +4432,65 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/payments/gateways/{{paymentProvider}}/default"
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}/default"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Archive Payment Gateway",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Gateway Logo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/payments/gateways/{{gatewayKey}}/logo"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             }
           },
           "response": [
@@ -4464,14 +4499,7 @@
               "status": "OK",
               "code": 200,
               "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Default payment gateway updated\",\n  \"gateway\": {\n    \"provider\": \"STRIPE\",\n    \"isDefault\": true\n  }\n}"
+              "body": "{\n  \"logoUrl\": \"https://api.example.com/uploads/logo.png\"\n}"
             }
           ]
         },
@@ -4489,22 +4517,7 @@
               "raw": "{{baseUrl}}/admin/payments/settings"
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"id\": \"GLOBAL\",\n  \"defaultCurrency\": \"ngn\",\n  \"allowDelayedPaymentMethods\": true,\n  \"bookingAutoCancelMinutes\": 30\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "Update Payment Settings",
@@ -4525,7 +4538,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"defaultCurrency\": \"ngn\",\n  \"allowDelayedPaymentMethods\": true,\n  \"bookingAutoCancelMinutes\": 45\n}",
+              "raw": "{\n  \"defaultCurrency\": \"ngn\",\n  \"allowDelayedPaymentMethods\": true,\n  \"bookingAutoCancelMinutes\": 30\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4533,22 +4546,7 @@
               }
             }
           },
-          "response": [
-            {
-              "name": "Example 200",
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Payment settings updated\",\n  \"settings\": {\n    \"id\": \"GLOBAL\",\n    \"defaultCurrency\": \"ngn\",\n    \"allowDelayedPaymentMethods\": true,\n    \"bookingAutoCancelMinutes\": 45\n  }\n}"
-            }
-          ]
+          "response": []
         }
       ]
     },

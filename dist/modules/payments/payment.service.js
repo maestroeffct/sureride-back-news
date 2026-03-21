@@ -1,12 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createStripePaymentSheetSession = createStripePaymentSheetSession;
+exports.createPaymentSheetSession = createPaymentSheetSession;
 exports.handlePaymentWebhook = handlePaymentWebhook;
 exports.getClientPaymentConfig = getClientPaymentConfig;
 const client_1 = require("@prisma/client");
 const prisma_1 = require("../../prisma");
 const stripe_gateway_1 = require("./gateways/stripe.gateway");
 const payment_secrets_1 = require("./payment-secrets");
+const IMPLEMENTED_RUNTIME_ADAPTERS = new Set([
+    "STRIPE",
+]);
+function isRuntimeImplemented(adapter) {
+    return IMPLEMENTED_RUNTIME_ADAPTERS.has(adapter);
+}
 function toMinorUnit(amount) {
     return Math.round(amount * 100);
 }
@@ -17,26 +23,77 @@ function normalizeProvider(rawProvider) {
     }
     return normalized;
 }
-function assertProviderImplemented(provider) {
-    if (provider !== "STRIPE") {
-        throw new Error("PAYMENT_PROVIDER_NOT_IMPLEMENTED");
-    }
+function runtimeAdapterFromProvider(provider) {
+    if (provider === "STRIPE")
+        return "STRIPE";
+    if (provider === "PAYSTACK")
+        return "PAYSTACK";
+    if (provider === "FLUTTERWAVE")
+        return "FLUTTERWAVE";
+    return "CUSTOM";
 }
-function toRuntimeConfig(config) {
-    return {
-        provider: config.provider,
-        mode: config.mode,
-        publishableKey: config.publishableKey,
-        secretKey: (0, payment_secrets_1.decryptSecret)(config.secretKeyEncrypted),
-        webhookSecret: (0, payment_secrets_1.decryptSecret)(config.webhookSecretEncrypted),
-        merchantDisplayName: config.merchantDisplayName,
-    };
+function providerFromRuntimeAdapter(runtimeAdapter) {
+    if (runtimeAdapter === "STRIPE")
+        return "STRIPE";
+    if (runtimeAdapter === "PAYSTACK")
+        return "PAYSTACK";
+    if (runtimeAdapter === "FLUTTERWAVE")
+        return "FLUTTERWAVE";
+    throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
+}
+function valueMap(gateway) {
+    const map = new Map();
+    for (const value of gateway.values) {
+        const decrypted = value.valueEncrypted
+            ? (0, payment_secrets_1.decryptSecret)(value.valueEncrypted)
+            : value.valuePlain;
+        if (decrypted && decrypted.trim()) {
+            map.set(value.field.key, decrypted.trim());
+        }
+    }
+    for (const field of gateway.fields) {
+        if (!map.has(field.key) && field.defaultValue?.trim()) {
+            map.set(field.key, field.defaultValue.trim());
+        }
+    }
+    return map;
+}
+function getStripeKeys(values) {
+    const publishableKey = values.get("publishable_key") || values.get("public_key");
+    const secretKey = values.get("secret_key");
+    const webhookSecret = values.get("webhook_secret") || null;
+    return { publishableKey: publishableKey || null, secretKey: secretKey || null, webhookSecret };
+}
+function toRuntimeConfig(gateway) {
+    if (!isRuntimeImplemented(gateway.runtimeAdapter)) {
+        throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
+    }
+    const values = valueMap(gateway);
+    if (gateway.runtimeAdapter === "STRIPE") {
+        const { publishableKey, secretKey, webhookSecret } = getStripeKeys(values);
+        if (!publishableKey || !secretKey) {
+            throw new Error("GATEWAY_REQUIRED_VALUES_MISSING");
+        }
+        return {
+            gatewayKey: gateway.key,
+            runtimeAdapter: gateway.runtimeAdapter,
+            provider: "STRIPE",
+            mode: gateway.mode,
+            publishableKey,
+            secretKey,
+            webhookSecret,
+            merchantDisplayName: gateway.merchantDisplayName,
+        };
+    }
+    throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
 }
 function buildStripeEnvConfig() {
     if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PUBLISHABLE_KEY) {
         return null;
     }
     return {
+        gatewayKey: "stripe",
+        runtimeAdapter: "STRIPE",
         provider: "STRIPE",
         mode: "TEST",
         publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
@@ -45,6 +102,15 @@ function buildStripeEnvConfig() {
         merchantDisplayName: process.env.STRIPE_MERCHANT_NAME || "SureRide",
     };
 }
+function buildGateway(config) {
+    if (config.provider === "STRIPE") {
+        if (!config.secretKey) {
+            throw new Error("GATEWAY_REQUIRED_VALUES_MISSING");
+        }
+        return new stripe_gateway_1.StripeGateway(config.secretKey, config.webhookSecret || undefined);
+    }
+    throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
+}
 async function getPaymentSettings() {
     return prisma_1.prisma.paymentSettings.upsert({
         where: { id: "GLOBAL" },
@@ -52,104 +118,128 @@ async function getPaymentSettings() {
         create: { id: "GLOBAL" },
     });
 }
-async function getActiveRuntimeGatewayConfig() {
-    const config = (await prisma_1.prisma.paymentGatewayConfig.findFirst({
-        where: { isEnabled: true, isDefault: true },
-        select: {
-            provider: true,
-            mode: true,
-            publishableKey: true,
-            secretKeyEncrypted: true,
-            webhookSecretEncrypted: true,
-            merchantDisplayName: true,
+async function findEnabledGatewayByKey(key) {
+    return prisma_1.prisma.paymentGateway.findFirst({
+        where: {
+            key,
+            isArchived: false,
         },
-    })) ||
-        (await prisma_1.prisma.paymentGatewayConfig.findFirst({
-            where: { isEnabled: true },
-            orderBy: { updatedAt: "desc" },
-            select: {
-                provider: true,
-                mode: true,
-                publishableKey: true,
-                secretKeyEncrypted: true,
-                webhookSecretEncrypted: true,
-                merchantDisplayName: true,
+        include: {
+            fields: true,
+            values: {
+                include: { field: true },
             },
-        }));
-    if (config) {
-        return toRuntimeConfig(config);
-    }
-    const envConfig = buildStripeEnvConfig();
-    if (envConfig)
-        return envConfig;
-    throw new Error("NO_ACTIVE_PAYMENT_GATEWAY");
-}
-async function getRuntimeGatewayConfigByProvider(provider) {
-    const config = await prisma_1.prisma.paymentGatewayConfig.findUnique({
-        where: { provider },
-        select: {
-            provider: true,
-            mode: true,
-            isEnabled: true,
-            publishableKey: true,
-            secretKeyEncrypted: true,
-            webhookSecretEncrypted: true,
-            merchantDisplayName: true,
         },
     });
-    if (config && config.isEnabled) {
-        return toRuntimeConfig(config);
+}
+async function getDefaultOrEnabledGateway() {
+    return ((await prisma_1.prisma.paymentGateway.findFirst({
+        where: { isArchived: false, isEnabled: true, isDefault: true },
+        include: {
+            fields: true,
+            values: { include: { field: true } },
+        },
+    })) ||
+        (await prisma_1.prisma.paymentGateway.findFirst({
+            where: { isArchived: false, isEnabled: true },
+            orderBy: { updatedAt: "desc" },
+            include: {
+                fields: true,
+                values: { include: { field: true } },
+            },
+        })));
+}
+async function getGatewayForCheckout(gatewayKey) {
+    if (gatewayKey) {
+        const gateway = await findEnabledGatewayByKey(gatewayKey);
+        if (!gateway)
+            throw new Error("GATEWAY_NOT_FOUND");
+        if (!gateway.isEnabled)
+            throw new Error("GATEWAY_NOT_ENABLED");
+        return gateway;
     }
+    const active = await getDefaultOrEnabledGateway();
+    if (!active)
+        throw new Error("GATEWAY_NOT_FOUND");
+    return active;
+}
+async function getRuntimeGatewayConfigByProvider(provider) {
+    const runtimeAdapter = runtimeAdapterFromProvider(provider);
+    if (!isRuntimeImplemented(runtimeAdapter)) {
+        throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
+    }
+    const gateway = await prisma_1.prisma.paymentGateway.findFirst({
+        where: {
+            isArchived: false,
+            isEnabled: true,
+            runtimeAdapter,
+        },
+        orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }],
+        include: {
+            fields: true,
+            values: {
+                include: { field: true },
+            },
+        },
+    });
+    if (gateway)
+        return toRuntimeConfig(gateway);
     if (provider === "STRIPE") {
-        const envConfig = buildStripeEnvConfig();
-        if (envConfig)
-            return envConfig;
+        const env = buildStripeEnvConfig();
+        if (env)
+            return env;
     }
-    throw new Error("PAYMENT_GATEWAY_NOT_ENABLED");
+    throw new Error("GATEWAY_NOT_FOUND");
 }
-function buildGateway(config) {
-    assertProviderImplemented(config.provider);
-    if (config.provider === "STRIPE") {
-        if (!config.secretKey) {
-            throw new Error("STRIPE_SECRET_KEY_NOT_CONFIGURED");
-        }
-        return new stripe_gateway_1.StripeGateway(config.secretKey, config.webhookSecret || undefined);
+function buildWebhookUpdate(event, gatewayKey) {
+    const data = {
+        paymentProvider: event.provider,
+        paymentStatus: event.status,
+        paymentReference: event.reference,
+        paymentError: event.errorMessage ?? null,
+        paymentGatewayKey: gatewayKey ?? undefined,
+    };
+    if (event.status === "SUCCEEDED") {
+        data.status = "CONFIRMED";
+        data.paidAt = new Date();
     }
-    throw new Error("PAYMENT_PROVIDER_NOT_IMPLEMENTED");
+    return data;
 }
-async function createStripePaymentSheetSession(input) {
+async function createPaymentSheetSession(input) {
     const booking = await prisma_1.prisma.booking.findFirst({
         where: { id: input.bookingId, userId: input.userId },
     });
-    if (!booking) {
+    if (!booking)
         throw new Error("BOOKING_NOT_FOUND");
-    }
-    if (booking.status !== "PENDING") {
+    if (booking.status !== "PENDING")
         throw new Error("BOOKING_NOT_PAYABLE");
-    }
-    if (booking.paymentStatus === "SUCCEEDED") {
+    if (booking.paymentStatus === "SUCCEEDED")
         throw new Error("BOOKING_ALREADY_PAID");
-    }
-    const [settings, gatewayConfig] = await Promise.all([
+    const [settings, selectedGateway] = await Promise.all([
         getPaymentSettings(),
-        getActiveRuntimeGatewayConfig(),
+        getGatewayForCheckout(input.gatewayKey),
     ]);
-    if (!gatewayConfig.publishableKey) {
-        throw new Error("PAYMENT_PUBLISHABLE_KEY_NOT_CONFIGURED");
+    if (!selectedGateway.isEnabled)
+        throw new Error("GATEWAY_NOT_ENABLED");
+    if (!isRuntimeImplemented(selectedGateway.runtimeAdapter)) {
+        throw new Error("GATEWAY_RUNTIME_NOT_IMPLEMENTED");
     }
-    const gateway = buildGateway(gatewayConfig);
+    const runtimeConfig = toRuntimeConfig(selectedGateway);
+    const gateway = buildGateway(runtimeConfig);
     const result = await gateway.createPaymentIntent({
         amount: toMinorUnit(booking.totalPrice),
         currency: (booking.currency || settings.defaultCurrency).toLowerCase(),
         metadata: {
             bookingId: booking.id,
             userId: booking.userId,
+            gatewayKey: selectedGateway.key,
         },
     });
     await prisma_1.prisma.booking.update({
         where: { id: booking.id },
         data: {
             paymentProvider: result.provider,
+            paymentGatewayKey: selectedGateway.key,
             paymentStatus: result.status,
             paymentReference: result.reference,
             paymentError: null,
@@ -157,29 +247,17 @@ async function createStripePaymentSheetSession(input) {
         },
     });
     return {
+        gatewayKey: selectedGateway.key,
         provider: result.provider,
         bookingId: booking.id,
         amount: toMinorUnit(booking.totalPrice),
         currency: (booking.currency || settings.defaultCurrency).toLowerCase(),
         paymentIntentClientSecret: result.clientSecret,
-        publishableKey: gatewayConfig.publishableKey,
-        merchantDisplayName: gatewayConfig.merchantDisplayName || "SureRide",
+        publishableKey: runtimeConfig.publishableKey,
+        merchantDisplayName: runtimeConfig.merchantDisplayName || "SureRide",
         allowsDelayedPaymentMethods: settings.allowDelayedPaymentMethods,
-        mode: gatewayConfig.mode,
+        mode: runtimeConfig.mode,
     };
-}
-function buildWebhookUpdate(event) {
-    const data = {
-        paymentProvider: event.provider,
-        paymentStatus: event.status,
-        paymentReference: event.reference,
-        paymentError: event.errorMessage ?? null,
-    };
-    if (event.status === "SUCCEEDED") {
-        data.status = "CONFIRMED";
-        data.paidAt = new Date();
-    }
-    return data;
 }
 async function handlePaymentWebhook(providerRaw, payload, signature) {
     const provider = normalizeProvider(providerRaw);
@@ -203,7 +281,7 @@ async function handlePaymentWebhook(providerRaw, payload, signature) {
     }
     await prisma_1.prisma.booking.update({
         where: { id: booking.id },
-        data: buildWebhookUpdate(event),
+        data: buildWebhookUpdate(event, gatewayConfig.gatewayKey || booking.paymentGatewayKey),
     });
     return {
         processed: true,
@@ -213,19 +291,49 @@ async function handlePaymentWebhook(providerRaw, payload, signature) {
     };
 }
 async function getClientPaymentConfig() {
-    const [settings, gatewayConfig] = await Promise.all([
+    const [settings, gateway] = await Promise.all([
         getPaymentSettings(),
-        getActiveRuntimeGatewayConfig(),
+        getDefaultOrEnabledGateway(),
     ]);
-    if (!gatewayConfig.publishableKey) {
-        throw new Error("PAYMENT_PUBLISHABLE_KEY_NOT_CONFIGURED");
+    if (!gateway) {
+        const envConfig = buildStripeEnvConfig();
+        if (!envConfig) {
+            throw new Error("GATEWAY_NOT_FOUND");
+        }
+        return {
+            gatewayKey: envConfig.gatewayKey,
+            displayName: "Stripe",
+            logoUrl: null,
+            runtimeAdapter: envConfig.runtimeAdapter,
+            isRuntimeSupported: true,
+            mode: envConfig.mode,
+            supportedCurrencies: [],
+            merchantDisplayName: envConfig.merchantDisplayName || "SureRide",
+            publishableKey: envConfig.publishableKey,
+            provider: envConfig.provider,
+            allowsDelayedPaymentMethods: settings.allowDelayedPaymentMethods,
+            defaultCurrency: settings.defaultCurrency,
+        };
     }
+    const runtimeSupported = isRuntimeImplemented(gateway.runtimeAdapter);
+    const values = valueMap(gateway);
+    const publishableKey = gateway.runtimeAdapter === "STRIPE"
+        ? values.get("publishable_key") || values.get("public_key") || null
+        : null;
     return {
-        provider: gatewayConfig.provider,
-        publishableKey: gatewayConfig.publishableKey,
-        merchantDisplayName: gatewayConfig.merchantDisplayName || "SureRide",
+        gatewayKey: gateway.key,
+        displayName: gateway.displayName,
+        logoUrl: gateway.logoUrl,
+        runtimeAdapter: gateway.runtimeAdapter,
+        isRuntimeSupported: runtimeSupported,
+        mode: gateway.mode,
+        supportedCurrencies: gateway.supportedCurrencies,
+        merchantDisplayName: gateway.merchantDisplayName || "SureRide",
+        publishableKey,
+        provider: runtimeSupported
+            ? providerFromRuntimeAdapter(gateway.runtimeAdapter)
+            : null,
         allowsDelayedPaymentMethods: settings.allowDelayedPaymentMethods,
         defaultCurrency: settings.defaultCurrency,
-        mode: gatewayConfig.mode,
     };
 }

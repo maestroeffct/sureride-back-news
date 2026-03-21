@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {
-  createStripePaymentSheetSession,
+  createPaymentSheetSession,
   getClientPaymentConfig,
   handlePaymentWebhook,
 } from "./payment.service";
@@ -10,12 +10,40 @@ function getSingleParam(param: string | string[] | undefined) {
   return Array.isArray(param) ? param[0] : param;
 }
 
+function getWebhookSignature(
+  req: Request,
+  providerRaw: string,
+): string | undefined {
+  const provider = providerRaw.toLowerCase();
+
+  const headerCandidates =
+    provider === "stripe"
+      ? ["stripe-signature", "x-payment-signature"]
+      : provider === "paystack"
+        ? ["x-paystack-signature", "x-payment-signature"]
+        : provider === "flutterwave"
+          ? ["verif-hash", "x-payment-signature"]
+          : ["x-payment-signature", "stripe-signature"];
+
+  for (const headerName of headerCandidates) {
+    const value = req.headers[headerName];
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
 export async function getPaymentConfigController(req: Request, res: Response) {
   try {
     const config = await getClientPaymentConfig();
     return res.json(config);
   } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+    if (error?.message === "GATEWAY_NOT_FOUND") {
+      return res.status(404).json({ message: "GATEWAY_NOT_FOUND" });
+    }
+    return res.status(500).json({ message: error?.message || "PAYMENT_CONFIG_FAILED" });
   }
 }
 
@@ -31,9 +59,12 @@ export async function createPaymentSheetController(req: Request, res: Response) 
       return res.status(400).json({ message: "bookingId is required" });
     }
 
-    const result = await createStripePaymentSheetSession({
+    const gatewayKey = req.body?.gatewayKey as string | undefined;
+
+    const result = await createPaymentSheetSession({
       bookingId,
       userId,
+      gatewayKey,
     });
 
     return res.json(result);
@@ -49,6 +80,18 @@ export async function createPaymentSheetController(req: Request, res: Response) 
       return res.status(400).json({ message: error.message });
     }
 
+    if (error.message === "GATEWAY_NOT_FOUND") {
+      return res.status(404).json({ message: "GATEWAY_NOT_FOUND" });
+    }
+
+    if (
+      error.message === "GATEWAY_NOT_ENABLED" ||
+      error.message === "GATEWAY_RUNTIME_NOT_IMPLEMENTED" ||
+      error.message === "GATEWAY_REQUIRED_VALUES_MISSING"
+    ) {
+      return res.status(400).json({ message: error.message });
+    }
+
     return res.status(500).json({ message: error.message || "Payment setup failed" });
   }
 }
@@ -60,9 +103,9 @@ export async function paymentWebhookController(req: Request, res: Response) {
       return res.status(400).json({ message: "Missing payment provider" });
     }
 
-    const signature = req.headers["stripe-signature"];
-    if (!signature || Array.isArray(signature)) {
-      return res.status(400).json({ message: "Missing stripe-signature" });
+    const signature = getWebhookSignature(req, provider);
+    if (!signature) {
+      return res.status(400).json({ message: "Missing webhook signature" });
     }
 
     const payload = req.body as Buffer;

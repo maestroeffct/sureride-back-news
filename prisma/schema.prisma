@@ -170,6 +170,7 @@ model Booking {
   status BookingStatus @default(PENDING)
 
   paymentProvider  PaymentProvider?
+  paymentGatewayKey String?
   paymentStatus    PaymentStatus    @default(UNPAID)
   paymentReference String?          @unique
   paymentError     String?
@@ -181,6 +182,8 @@ model Booking {
   insurance InsurancePackage? @relation(fields: [insuranceId], references: [id])
 
   createdAt DateTime @default(now())
+
+  @@index([paymentGatewayKey])
 }
 
 model PaymentGatewayConfig {
@@ -199,6 +202,68 @@ model PaymentGatewayConfig {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PaymentGateway {
+  id                  String                       @id @default(uuid())
+  key                 String                       @unique
+  displayName         String
+  logoUrl             String?
+  runtimeAdapter      PaymentGatewayRuntimeAdapter @default(CUSTOM)
+  mode                PaymentMode                  @default(TEST)
+  isEnabled           Boolean                      @default(false)
+  isDefault           Boolean                      @default(false)
+  isArchived          Boolean                      @default(false)
+  merchantDisplayName String?
+  supportedCurrencies String[]                     @default([])
+  metadata            Json?
+
+  fields PaymentGatewayField[]
+  values PaymentGatewayFieldValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentGatewayField {
+  id              String           @id @default(uuid())
+  gatewayId       String
+  key             String
+  label           String
+  type            PaymentFieldType @default(TEXT)
+  isRequired      Boolean          @default(false)
+  isSecret        Boolean          @default(false)
+  sortOrder       Int              @default(0)
+  placeholder     String?
+  helpText        String?
+  defaultValue    String?
+  validationRegex String?
+  options         Json?
+
+  gateway PaymentGateway @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
+  values  PaymentGatewayFieldValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gatewayId, key])
+  @@index([gatewayId, sortOrder])
+}
+
+model PaymentGatewayFieldValue {
+  id               String  @id @default(uuid())
+  gatewayId        String
+  fieldId          String
+  valuePlain       String?
+  valueEncrypted   String?
+  updatedByAdminId String?
+
+  gateway PaymentGateway      @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
+  field   PaymentGatewayField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime @updatedAt
+
+  @@unique([gatewayId, fieldId])
 }
 
 model PaymentSettings {
@@ -525,6 +590,23 @@ enum PaymentProvider {
 enum PaymentMode {
   TEST
   LIVE
+}
+
+enum PaymentGatewayRuntimeAdapter {
+  STRIPE
+  PAYSTACK
+  FLUTTERWAVE
+  CUSTOM
+}
+
+enum PaymentFieldType {
+  TEXT
+  SECRET
+  EMAIL
+  URL
+  NUMBER
+  BOOLEAN
+  JSON
 }
 
 enum EmployeePermission {

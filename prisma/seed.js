@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = require("../src/prisma");
+const payment_secrets_1 = require("../src/modules/payments/payment-secrets");
 async function main() {
     const now = new Date();
     const defaultPasswordHash = await bcryptjs_1.default.hash("Password123!", 10);
@@ -112,6 +113,173 @@ async function main() {
             phoneNumber: "8000000000",
         },
     });
+    // 2️⃣c Payment Gateway (Option B)
+    const stripePublishable = process.env.STRIPE_PUBLISHABLE_KEY || null;
+    const stripeSecret = process.env.STRIPE_SECRET_KEY || null;
+    const stripeWebhook = process.env.STRIPE_WEBHOOK_SECRET || null;
+    const stripeReady = Boolean(stripePublishable && stripeSecret);
+    const stripeGateway = await prisma_1.prisma.paymentGateway.upsert({
+        where: { key: "stripe" },
+        update: {
+            displayName: "Stripe",
+            runtimeAdapter: "STRIPE",
+            mode: "TEST",
+            isEnabled: stripeReady,
+            isDefault: stripeReady,
+            merchantDisplayName: process.env.STRIPE_MERCHANT_NAME || "SureRide",
+            supportedCurrencies: ["ngn"],
+            isArchived: false,
+        },
+        create: {
+            key: "stripe",
+            displayName: "Stripe",
+            runtimeAdapter: "STRIPE",
+            mode: "TEST",
+            isEnabled: stripeReady,
+            isDefault: stripeReady,
+            merchantDisplayName: process.env.STRIPE_MERCHANT_NAME || "SureRide",
+            supportedCurrencies: ["ngn"],
+        },
+    });
+    if (stripeReady) {
+        await prisma_1.prisma.paymentGateway.updateMany({
+            where: {
+                key: { not: "stripe" },
+            },
+            data: {
+                isDefault: false,
+            },
+        });
+    }
+    const stripeFieldPublishable = await prisma_1.prisma.paymentGatewayField.upsert({
+        where: {
+            gatewayId_key: {
+                gatewayId: stripeGateway.id,
+                key: "publishable_key",
+            },
+        },
+        update: {
+            label: "Publishable Key",
+            type: "TEXT",
+            isRequired: true,
+            isSecret: false,
+            sortOrder: 1,
+        },
+        create: {
+            gatewayId: stripeGateway.id,
+            key: "publishable_key",
+            label: "Publishable Key",
+            type: "TEXT",
+            isRequired: true,
+            isSecret: false,
+            sortOrder: 1,
+        },
+    });
+    const stripeFieldSecret = await prisma_1.prisma.paymentGatewayField.upsert({
+        where: {
+            gatewayId_key: {
+                gatewayId: stripeGateway.id,
+                key: "secret_key",
+            },
+        },
+        update: {
+            label: "Secret Key",
+            type: "SECRET",
+            isRequired: true,
+            isSecret: true,
+            sortOrder: 2,
+        },
+        create: {
+            gatewayId: stripeGateway.id,
+            key: "secret_key",
+            label: "Secret Key",
+            type: "SECRET",
+            isRequired: true,
+            isSecret: true,
+            sortOrder: 2,
+        },
+    });
+    const stripeFieldWebhook = await prisma_1.prisma.paymentGatewayField.upsert({
+        where: {
+            gatewayId_key: {
+                gatewayId: stripeGateway.id,
+                key: "webhook_secret",
+            },
+        },
+        update: {
+            label: "Webhook Secret",
+            type: "SECRET",
+            isRequired: false,
+            isSecret: true,
+            sortOrder: 3,
+        },
+        create: {
+            gatewayId: stripeGateway.id,
+            key: "webhook_secret",
+            label: "Webhook Secret",
+            type: "SECRET",
+            isRequired: false,
+            isSecret: true,
+            sortOrder: 3,
+        },
+    });
+    if (stripePublishable) {
+        await prisma_1.prisma.paymentGatewayFieldValue.upsert({
+            where: {
+                gatewayId_fieldId: {
+                    gatewayId: stripeGateway.id,
+                    fieldId: stripeFieldPublishable.id,
+                },
+            },
+            update: {
+                valuePlain: stripePublishable,
+                valueEncrypted: null,
+            },
+            create: {
+                gatewayId: stripeGateway.id,
+                fieldId: stripeFieldPublishable.id,
+                valuePlain: stripePublishable,
+            },
+        });
+    }
+    if (stripeSecret) {
+        await prisma_1.prisma.paymentGatewayFieldValue.upsert({
+            where: {
+                gatewayId_fieldId: {
+                    gatewayId: stripeGateway.id,
+                    fieldId: stripeFieldSecret.id,
+                },
+            },
+            update: {
+                valuePlain: null,
+                valueEncrypted: (0, payment_secrets_1.encryptSecret)(stripeSecret),
+            },
+            create: {
+                gatewayId: stripeGateway.id,
+                fieldId: stripeFieldSecret.id,
+                valueEncrypted: (0, payment_secrets_1.encryptSecret)(stripeSecret),
+            },
+        });
+    }
+    if (stripeWebhook) {
+        await prisma_1.prisma.paymentGatewayFieldValue.upsert({
+            where: {
+                gatewayId_fieldId: {
+                    gatewayId: stripeGateway.id,
+                    fieldId: stripeFieldWebhook.id,
+                },
+            },
+            update: {
+                valuePlain: null,
+                valueEncrypted: (0, payment_secrets_1.encryptSecret)(stripeWebhook),
+            },
+            create: {
+                gatewayId: stripeGateway.id,
+                fieldId: stripeFieldWebhook.id,
+                valueEncrypted: (0, payment_secrets_1.encryptSecret)(stripeWebhook),
+            },
+        });
+    }
     // 3️⃣ Locations
     const ikejaExisting = await prisma_1.prisma.location.findFirst({
         where: { name: "Ikeja City Mall", providerId: provider.id },

@@ -27,6 +27,7 @@ const users_routes_1 = __importDefault(require("./modules/users/users.routes"));
 const admin_users_routes_1 = __importDefault(require("./admin/users/admin.users.routes"));
 const admin_payments_routes_1 = __importDefault(require("./admin/payments/admin.payments.routes"));
 const admin_employees_routes_1 = __importDefault(require("./admin/employees/admin.employees.routes"));
+const admin_cars_routes_1 = __importDefault(require("./admin/cars/admin.cars.routes"));
 const app = (0, express_1.default)();
 const allowedOrigins = ["http://localhost:3000"];
 const corsOptions = {
@@ -68,4 +69,6 @@ app.use("/admin", admin_provider_requests_routes_1.default);
 app.use("/admin", admin_users_routes_1.default);
 app.use("/admin", admin_payments_routes_1.default);
 app.use("/admin", admin_employees_routes_1.default);
+// CArs
+app.use("/admin", admin_cars_routes_1.default);
 exports.default = app;

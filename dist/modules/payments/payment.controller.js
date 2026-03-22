@@ -9,6 +9,23 @@ function getSingleParam(param) {
         return undefined;
     return Array.isArray(param) ? param[0] : param;
 }
+function getWebhookSignature(req, providerRaw) {
+    const provider = providerRaw.toLowerCase();
+    const headerCandidates = provider === "stripe"
+        ? ["stripe-signature", "x-payment-signature"]
+        : provider === "paystack"
+            ? ["x-paystack-signature", "x-payment-signature"]
+            : provider === "flutterwave"
+                ? ["verif-hash", "x-payment-signature"]
+                : ["x-payment-signature", "stripe-signature"];
+    for (const headerName of headerCandidates) {
+        const value = req.headers[headerName];
+        if (typeof value === "string" && value.trim()) {
+            return value;
+        }
+    }
+    return undefined;
+}
 async function getPaymentConfigController(req, res) {
     try {
         const config = await (0, payment_service_1.getClientPaymentConfig)();
@@ -64,9 +81,9 @@ async function paymentWebhookController(req, res) {
         if (!provider) {
             return res.status(400).json({ message: "Missing payment provider" });
         }
-        const signature = req.headers["stripe-signature"];
-        if (!signature || Array.isArray(signature)) {
-            return res.status(400).json({ message: "Missing stripe-signature" });
+        const signature = getWebhookSignature(req, provider);
+        if (!signature) {
+            return res.status(400).json({ message: "Missing webhook signature" });
         }
         const payload = req.body;
         if (!Buffer.isBuffer(payload)) {

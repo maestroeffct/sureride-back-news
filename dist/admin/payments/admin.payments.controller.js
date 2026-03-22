@@ -73,7 +73,7 @@ function getPublicBaseUrl(req) {
 async function adminListPaymentGatewaysController(_req, res) {
     try {
         const gateways = await (0, admin_payments_service_1.listAdminPaymentGateways)();
-        return res.json(gateways);
+        return res.json({ items: gateways });
     }
     catch (error) {
         console.error(error);

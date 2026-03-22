@@ -97,6 +97,18 @@
     {
       "key": "gatewayKey",
       "value": "stripe"
+    },
+    {
+      "key": "metaCategoryId",
+      "value": ""
+    },
+    {
+      "key": "metaBrandId",
+      "value": ""
+    },
+    {
+      "key": "metaModelId",
+      "value": ""
     }
   ],
   "item": [
@@ -4841,6 +4853,416 @@
               "code": 200,
               "_postman_previewlanguage": "json",
               "body": "{\n  \"message\": \"Employee status updated\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Cars Metadata",
+      "item": [
+        {
+          "name": "List Meta Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/categories?page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"cat_1\",\n      \"name\": \"SUV\",\n      \"slug\": \"suv\",\n      \"externalId\": \"ext_cat_10\",\n      \"source\": \"external-cars-api\",\n      \"isActive\": true,\n      \"sortOrder\": 1,\n      \"brandsCount\": 12,\n      \"modelsCount\": 86,\n      \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n      \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Import Meta Categories",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/categories/import"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"external-cars-api\",\n  \"items\": [\n    {\n      \"externalId\": \"ext_cat_10\",\n      \"name\": \"SUV\",\n      \"slug\": \"suv\",\n      \"sortOrder\": 1,\n      \"metadata\": {}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Categories imported\",\n  \"created\": 3,\n  \"updated\": 9,\n  \"skipped\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Meta Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/categories"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Convertible\",\n  \"slug\": \"convertible\",\n  \"isActive\": true,\n  \"sortOrder\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "OK",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"cat_uuid\",\n  \"name\": \"Convertible\",\n  \"slug\": \"convertible\",\n  \"externalId\": null,\n  \"source\": \"manual\",\n  \"isActive\": true,\n  \"sortOrder\": 20,\n  \"metadata\": null,\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Meta Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/categories/{{metaCategoryId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SUV\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"cat_1\",\n  \"name\": \"SUV\",\n  \"slug\": \"suv\",\n  \"externalId\": \"ext_cat_10\",\n  \"source\": \"external-cars-api\",\n  \"isActive\": true,\n  \"sortOrder\": 1,\n  \"metadata\": {},\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:05:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Meta Brands",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/brands?categoryId={{metaCategoryId}}&page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"brand_1\",\n      \"categoryId\": \"cat_1\",\n      \"categoryName\": \"SUV\",\n      \"name\": \"Toyota\",\n      \"slug\": \"toyota\",\n      \"externalId\": \"ext_brand_3\",\n      \"source\": \"external-cars-api\",\n      \"isActive\": true,\n      \"sortOrder\": 1,\n      \"modelsCount\": 24,\n      \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n      \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Import Meta Brands",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/brands/import"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"external-cars-api\",\n  \"categoryId\": \"{{metaCategoryId}}\",\n  \"items\": [\n    {\n      \"externalId\": \"ext_brand_3\",\n      \"name\": \"Toyota\",\n      \"slug\": \"toyota\",\n      \"sortOrder\": 1,\n      \"metadata\": {}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Brands imported\",\n  \"created\": 2,\n  \"updated\": 6,\n  \"skipped\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Meta Brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/brands"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{metaCategoryId}}\",\n  \"name\": \"Toyota\",\n  \"slug\": \"toyota\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "OK",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"brand_uuid\",\n  \"categoryId\": \"cat_1\",\n  \"name\": \"Toyota\",\n  \"slug\": \"toyota\",\n  \"externalId\": null,\n  \"source\": \"manual\",\n  \"isActive\": true,\n  \"sortOrder\": 1,\n  \"metadata\": null,\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Meta Brand",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/brands/{{metaBrandId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{metaCategoryId}}\",\n  \"name\": \"Toyota\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"brand_1\",\n  \"categoryId\": \"cat_1\",\n  \"name\": \"Toyota\",\n  \"slug\": \"toyota\",\n  \"externalId\": \"ext_brand_3\",\n  \"source\": \"external-cars-api\",\n  \"isActive\": true,\n  \"sortOrder\": 1,\n  \"metadata\": {},\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:05:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Meta Models",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/models?brandId={{metaBrandId}}&page=1&limit=20"
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"model_1\",\n      \"categoryId\": \"cat_1\",\n      \"categoryName\": \"SUV\",\n      \"brandId\": \"brand_1\",\n      \"brandName\": \"Toyota\",\n      \"name\": \"RAV4\",\n      \"slug\": \"rav4\",\n      \"externalId\": \"ext_model_88\",\n      \"source\": \"external-cars-api\",\n      \"isActive\": true,\n      \"sortOrder\": 1,\n      \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n      \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Import Meta Models",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/models/import"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": \"external-cars-api\",\n  \"categoryId\": \"{{metaCategoryId}}\",\n  \"brandId\": \"{{metaBrandId}}\",\n  \"items\": [\n    {\n      \"externalId\": \"ext_model_88\",\n      \"name\": \"RAV4\",\n      \"slug\": \"rav4\",\n      \"sortOrder\": 1,\n      \"metadata\": {}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Models imported\",\n  \"created\": 5,\n  \"updated\": 12,\n  \"skipped\": 1\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Meta Model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/models"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{metaCategoryId}}\",\n  \"brandId\": \"{{metaBrandId}}\",\n  \"name\": \"RAV4\",\n  \"slug\": \"rav4\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 201",
+              "status": "OK",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"model_uuid\",\n  \"categoryId\": \"cat_1\",\n  \"brandId\": \"brand_1\",\n  \"name\": \"RAV4\",\n  \"slug\": \"rav4\",\n  \"externalId\": null,\n  \"source\": \"manual\",\n  \"isActive\": true,\n  \"sortOrder\": 1,\n  \"metadata\": null,\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Meta Model",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/cars/meta/models/{{metaModelId}}"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brandId\": \"{{metaBrandId}}\",\n  \"name\": \"RAV4\",\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"model_1\",\n  \"categoryId\": \"cat_1\",\n  \"brandId\": \"brand_1\",\n  \"name\": \"RAV4\",\n  \"slug\": \"rav4\",\n  \"externalId\": \"ext_model_88\",\n  \"source\": \"external-cars-api\",\n  \"isActive\": true,\n  \"sortOrder\": 1,\n  \"metadata\": {},\n  \"createdAt\": \"2026-03-21T10:00:00.000Z\",\n  \"updatedAt\": \"2026-03-21T10:05:00.000Z\"\n}"
             }
           ]
         }

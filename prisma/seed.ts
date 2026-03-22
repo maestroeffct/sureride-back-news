@@ -293,6 +293,208 @@ async function main() {
     });
   }
 
+  // 2️⃣d Car metadata config
+  const economyCategory = await prisma.carCategoryConfig.upsert({
+    where: { slug: "economy" },
+    update: {
+      name: "Economy",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+    create: {
+      name: "Economy",
+      slug: "economy",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  const luxuryCategory = await prisma.carCategoryConfig.upsert({
+    where: { slug: "luxury" },
+    update: {
+      name: "Luxury",
+      source: "manual",
+      sortOrder: 2,
+      isActive: true,
+    },
+    create: {
+      name: "Luxury",
+      slug: "luxury",
+      source: "manual",
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+
+  const suvCategory = await prisma.carCategoryConfig.upsert({
+    where: { slug: "suv" },
+    update: {
+      name: "SUV",
+      externalId: "ext_cat_suv",
+      source: "external-cars-api",
+      sortOrder: 3,
+      isActive: true,
+    },
+    create: {
+      name: "SUV",
+      slug: "suv",
+      externalId: "ext_cat_suv",
+      source: "external-cars-api",
+      sortOrder: 3,
+      isActive: true,
+    },
+  });
+
+  const toyotaBrand = await prisma.carBrandConfig.upsert({
+    where: {
+      slug_categoryId: {
+        slug: "toyota",
+        categoryId: economyCategory.id,
+      },
+    },
+    update: {
+      name: "Toyota",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+    create: {
+      categoryId: economyCategory.id,
+      name: "Toyota",
+      slug: "toyota",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  const hondaBrand = await prisma.carBrandConfig.upsert({
+    where: {
+      slug_categoryId: {
+        slug: "honda",
+        categoryId: luxuryCategory.id,
+      },
+    },
+    update: {
+      name: "Honda",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+    create: {
+      categoryId: luxuryCategory.id,
+      name: "Honda",
+      slug: "honda",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  const lexusBrand = await prisma.carBrandConfig.upsert({
+    where: {
+      slug_categoryId: {
+        slug: "lexus",
+        categoryId: suvCategory.id,
+      },
+    },
+    update: {
+      name: "Lexus",
+      externalId: "ext_brand_lexus",
+      source: "external-cars-api",
+      sortOrder: 2,
+      isActive: true,
+    },
+    create: {
+      categoryId: suvCategory.id,
+      name: "Lexus",
+      slug: "lexus",
+      externalId: "ext_brand_lexus",
+      source: "external-cars-api",
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+
+  await prisma.carModelConfig.upsert({
+    where: {
+      slug_brandId: {
+        slug: "corolla",
+        brandId: toyotaBrand.id,
+      },
+    },
+    update: {
+      name: "Corolla",
+      categoryId: economyCategory.id,
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+    create: {
+      categoryId: economyCategory.id,
+      brandId: toyotaBrand.id,
+      name: "Corolla",
+      slug: "corolla",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  await prisma.carModelConfig.upsert({
+    where: {
+      slug_brandId: {
+        slug: "accord",
+        brandId: hondaBrand.id,
+      },
+    },
+    update: {
+      name: "Accord",
+      categoryId: luxuryCategory.id,
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+    create: {
+      categoryId: luxuryCategory.id,
+      brandId: hondaBrand.id,
+      name: "Accord",
+      slug: "accord",
+      source: "manual",
+      sortOrder: 1,
+      isActive: true,
+    },
+  });
+
+  await prisma.carModelConfig.upsert({
+    where: {
+      slug_brandId: {
+        slug: "rx-350",
+        brandId: lexusBrand.id,
+      },
+    },
+    update: {
+      name: "RX 350",
+      categoryId: suvCategory.id,
+      externalId: "ext_model_rx350",
+      source: "external-cars-api",
+      sortOrder: 2,
+      isActive: true,
+    },
+    create: {
+      categoryId: suvCategory.id,
+      brandId: lexusBrand.id,
+      name: "RX 350",
+      slug: "rx-350",
+      externalId: "ext_model_rx350",
+      source: "external-cars-api",
+      sortOrder: 2,
+      isActive: true,
+    },
+  });
+
   // 3️⃣ Locations
   const ikejaExisting = await prisma.location.findFirst({
     where: { name: "Ikeja City Mall", providerId: provider.id },

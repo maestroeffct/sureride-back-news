@@ -22,6 +22,7 @@ import usersRoutes from "./modules/users/users.routes";
 import adminUsersRoutes from "./admin/users/admin.users.routes";
 import adminPaymentsRoutes from "./admin/payments/admin.payments.routes";
 import adminEmployeesRoutes from "./admin/employees/admin.employees.routes";
+import adminCarsRoutes from "./admin/cars/admin.cars.routes";
 
 const app = express();
 
@@ -78,5 +79,8 @@ app.use("/admin", adminProviderRequestRoutes);
 app.use("/admin", adminUsersRoutes);
 app.use("/admin", adminPaymentsRoutes);
 app.use("/admin", adminEmployeesRoutes);
+
+// CArs
+app.use("/admin", adminCarsRoutes);
 
 export default app;

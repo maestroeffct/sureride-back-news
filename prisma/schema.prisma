@@ -501,6 +501,76 @@ model CarFeature {
   @@index([featureId])
 }
 
+model CarCategoryConfig {
+  id         String  @id @default(uuid())
+  name       String
+  slug       String  @unique
+  externalId String?
+  source     String?
+  isActive   Boolean @default(true)
+  sortOrder  Int     @default(0)
+  metadata   Json?
+
+  brands CarBrandConfig[]
+  models CarModelConfig[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([externalId])
+}
+
+model CarBrandConfig {
+  id         String  @id @default(uuid())
+  categoryId String?
+  name       String
+  slug       String
+  externalId String?
+  source     String?
+  isActive   Boolean @default(true)
+  sortOrder  Int     @default(0)
+  metadata   Json?
+
+  category CarCategoryConfig? @relation(fields: [categoryId], references: [id])
+  models   CarModelConfig[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, categoryId])
+  @@unique([name, categoryId])
+  @@index([categoryId])
+  @@index([externalId])
+  @@index([isActive])
+}
+
+model CarModelConfig {
+  id         String  @id @default(uuid())
+  categoryId String?
+  brandId    String
+  name       String
+  slug       String
+  externalId String?
+  source     String?
+  isActive   Boolean @default(true)
+  sortOrder  Int     @default(0)
+  metadata   Json?
+
+  category CarCategoryConfig? @relation(fields: [categoryId], references: [id])
+  brand    CarBrandConfig     @relation(fields: [brandId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, brandId])
+  @@unique([name, brandId])
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([externalId])
+  @@index([isActive])
+}
+
 model EmployeeRole {
   id          String               @id @default(uuid())
   name        String               @unique

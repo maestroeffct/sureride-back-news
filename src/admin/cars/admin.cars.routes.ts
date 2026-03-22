@@ -12,8 +12,69 @@ import {
   adminActivateCarController,
   adminDeactivateCarController,
 } from "./admin.cars.controller";
+import {
+  adminCreateCarMetaBrandController,
+  adminCreateCarMetaCategoryController,
+  adminCreateCarMetaModelController,
+  adminImportCarMetaBrandsController,
+  adminImportCarMetaCategoriesController,
+  adminImportCarMetaModelsController,
+  adminListCarMetaBrandsController,
+  adminListCarMetaCategoriesController,
+  adminListCarMetaModelsController,
+  adminUpdateCarMetaBrandController,
+  adminUpdateCarMetaCategoryController,
+  adminUpdateCarMetaModelController,
+} from "./admin.cars.meta.controller";
 
 const router = Router();
+
+router.get(
+  "/cars/meta/categories",
+  requireAdminAuth,
+  adminListCarMetaCategoriesController,
+);
+router.post(
+  "/cars/meta/categories/import",
+  requireAdminAuth,
+  adminImportCarMetaCategoriesController,
+);
+router.post(
+  "/cars/meta/categories",
+  requireAdminAuth,
+  adminCreateCarMetaCategoryController,
+);
+router.patch(
+  "/cars/meta/categories/:categoryId",
+  requireAdminAuth,
+  adminUpdateCarMetaCategoryController,
+);
+
+router.get("/cars/meta/brands", requireAdminAuth, adminListCarMetaBrandsController);
+router.post(
+  "/cars/meta/brands/import",
+  requireAdminAuth,
+  adminImportCarMetaBrandsController,
+);
+router.post("/cars/meta/brands", requireAdminAuth, adminCreateCarMetaBrandController);
+router.patch(
+  "/cars/meta/brands/:brandId",
+  requireAdminAuth,
+  adminUpdateCarMetaBrandController,
+);
+
+router.get("/cars/meta/models", requireAdminAuth, adminListCarMetaModelsController);
+router.post(
+  "/cars/meta/models/import",
+  requireAdminAuth,
+  adminImportCarMetaModelsController,
+);
+router.post("/cars/meta/models", requireAdminAuth, adminCreateCarMetaModelController);
+router.patch(
+  "/cars/meta/models/:modelId",
+  requireAdminAuth,
+  adminUpdateCarMetaModelController,
+);
 
 router.get("/cars", requireAdminAuth, adminListCarsController);
 router.get("/cars/:carId", requireAdminAuth, adminGetCarController);

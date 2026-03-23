@@ -50,6 +50,10 @@ export const adminProfileStatusSchema = z.object({
   profileStatus: z.nativeEnum(ProfileStatus),
 });
 
+export const adminResetUserPasswordSchema = z.object({
+  sendEmail: z.boolean().optional().default(true),
+});
+
 export const adminRejectKycSchema = z.object({
   reason: z.string().min(2),
 });

@@ -5,6 +5,7 @@ import {
   adminCreateUserController,
   adminListUsersController,
   adminGetUserController,
+  adminResetUserPasswordController,
   adminUserStatusController,
   adminVerificationController,
   adminProfileStatusController,
@@ -19,6 +20,12 @@ router.post("/users", requireAdminAuth, adminCreateUserController);
 router.get("/users", requireAdminAuth, adminListUsersController);
 
 router.get("/users/:userId", requireAdminAuth, adminGetUserController);
+
+router.post(
+  "/users/:userId/reset-password",
+  requireAdminAuth,
+  adminResetUserPasswordController,
+);
 
 router.patch(
   "/users/:userId/status",

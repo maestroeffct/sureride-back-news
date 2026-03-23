@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminRejectKycSchema = exports.adminProfileStatusSchema = exports.adminVerificationSchema = exports.adminCreateUserSchema = exports.adminUserStatusSchema = exports.adminUsersQuerySchema = void 0;
+exports.adminRejectKycSchema = exports.adminResetUserPasswordSchema = exports.adminProfileStatusSchema = exports.adminVerificationSchema = exports.adminCreateUserSchema = exports.adminUserStatusSchema = exports.adminUsersQuerySchema = void 0;
 const zod_1 = require("zod");
 const client_1 = require("@prisma/client");
 exports.adminUsersQuerySchema = zod_1.z.object({
@@ -45,6 +45,9 @@ exports.adminVerificationSchema = zod_1.z.object({
 });
 exports.adminProfileStatusSchema = zod_1.z.object({
     profileStatus: zod_1.z.nativeEnum(client_1.ProfileStatus),
+});
+exports.adminResetUserPasswordSchema = zod_1.z.object({
+    sendEmail: zod_1.z.boolean().optional().default(true),
 });
 exports.adminRejectKycSchema = zod_1.z.object({
     reason: zod_1.z.string().min(2),

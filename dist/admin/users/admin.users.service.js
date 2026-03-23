@@ -9,6 +9,7 @@ exports.adminUpdateUserStatus = adminUpdateUserStatus;
 exports.adminUpdateVerification = adminUpdateVerification;
 exports.adminUpdateProfileStatus = adminUpdateProfileStatus;
 exports.adminCreateUser = adminCreateUser;
+exports.adminResetUserPassword = adminResetUserPassword;
 exports.adminApproveUserKyc = adminApproveUserKyc;
 exports.adminRejectUserKyc = adminRejectUserKyc;
 const prisma_1 = require("../../prisma");
@@ -74,6 +75,9 @@ function toUploadUrl(fileName, publicBaseUrl) {
     }
     const cleanBase = (publicBaseUrl || "").replace(/\/+$/, "");
     return cleanBase ? `${cleanBase}/uploads/${fileName}` : `/uploads/${fileName}`;
+}
+function generateTemporaryPassword() {
+    return (0, crypto_1.randomBytes)(9).toString("base64url");
 }
 function mapUserForAdmin(user, publicBaseUrl) {
     const { password, ...safeUser } = user;
@@ -203,7 +207,7 @@ async function adminCreateUser(input) {
     if (existingUser) {
         throw new Error("USER_ALREADY_EXISTS");
     }
-    const plainPassword = input.password ?? (0, crypto_1.randomBytes)(6).toString("hex");
+    const plainPassword = input.password ?? generateTemporaryPassword();
     const hashedPassword = await bcryptjs_1.default.hash(plainPassword, 10);
     const ttlHours = Number(process.env.USER_TEMP_PASSWORD_TTL_HOURS || 24);
     const tempPasswordExpiresAt = sendInvite && Number.isFinite(ttlHours)
@@ -243,6 +247,54 @@ async function adminCreateUser(input) {
         inviteEmailSent,
         temporaryPasswordGenerated: !input.password,
         temporaryPasswordExpiresAt: user.tempPasswordExpiresAt,
+    };
+}
+async function adminResetUserPassword(userId, sendEmail) {
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            firstName: true,
+            email: true,
+        },
+    });
+    if (!user) {
+        throw new Error("USER_NOT_FOUND");
+    }
+    const temporaryPassword = generateTemporaryPassword();
+    const passwordHash = await bcryptjs_1.default.hash(temporaryPassword, 10);
+    const ttlHours = Number(process.env.USER_TEMP_PASSWORD_TTL_HOURS || 24);
+    const temporaryPasswordExpiresAt = new Date(Date.now() + ttlHours * 60 * 60 * 1000);
+    await prisma_1.prisma.$transaction(async (tx) => {
+        await tx.user.update({
+            where: { id: userId },
+            data: {
+                password: passwordHash,
+                mustChangePassword: true,
+                tempPasswordExpiresAt: temporaryPasswordExpiresAt,
+            },
+        });
+        await tx.session.updateMany({
+            where: {
+                userId,
+                isActive: true,
+            },
+            data: {
+                isActive: false,
+            },
+        });
+    });
+    let emailSent = false;
+    if (sendEmail) {
+        emailSent = await sendUserCredentialsEmailSafe({
+            firstName: user.firstName || "there",
+            email: user.email,
+            password: temporaryPassword,
+        });
+    }
+    return {
+        emailSent,
+        temporaryPasswordExpiresAt,
     };
 }
 async function adminApproveUserKyc(userId, publicBaseUrl) {

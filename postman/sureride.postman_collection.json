@@ -3973,6 +3973,43 @@
           ]
         },
         {
+          "name": "Reset User Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users/{{userId}}/reset-password"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sendEmail\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Example 200",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"message\": \"Password reset initiated\",\n  \"emailSent\": true,\n  \"temporaryPasswordExpiresAt\": \"2026-03-23T10:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
           "name": "Update User Active Status",
           "request": {
             "method": "PATCH",

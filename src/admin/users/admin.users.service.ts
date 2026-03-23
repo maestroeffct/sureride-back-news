@@ -75,6 +75,10 @@ function toUploadUrl(
   return cleanBase ? `${cleanBase}/uploads/${fileName}` : `/uploads/${fileName}`;
 }
 
+function generateTemporaryPassword() {
+  return randomBytes(9).toString("base64url");
+}
+
 function mapUserForAdmin<T extends { password?: string; kyc?: any }>(
   user: T,
   publicBaseUrl?: string,
@@ -261,7 +265,7 @@ export async function adminCreateUser(input: {
     throw new Error("USER_ALREADY_EXISTS");
   }
 
-  const plainPassword = input.password ?? randomBytes(6).toString("hex");
+  const plainPassword = input.password ?? generateTemporaryPassword();
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
   const ttlHours = Number(process.env.USER_TEMP_PASSWORD_TTL_HOURS || 24);
   const tempPasswordExpiresAt =
@@ -306,6 +310,66 @@ export async function adminCreateUser(input: {
     inviteEmailSent,
     temporaryPasswordGenerated: !input.password,
     temporaryPasswordExpiresAt: user.tempPasswordExpiresAt,
+  };
+}
+
+export async function adminResetUserPassword(
+  userId: string,
+  sendEmail: boolean,
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      firstName: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  const temporaryPassword = generateTemporaryPassword();
+  const passwordHash = await bcrypt.hash(temporaryPassword, 10);
+  const ttlHours = Number(process.env.USER_TEMP_PASSWORD_TTL_HOURS || 24);
+  const temporaryPasswordExpiresAt = new Date(
+    Date.now() + ttlHours * 60 * 60 * 1000,
+  );
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        password: passwordHash,
+        mustChangePassword: true,
+        tempPasswordExpiresAt: temporaryPasswordExpiresAt,
+      },
+    });
+
+    await tx.session.updateMany({
+      where: {
+        userId,
+        isActive: true,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+  });
+
+  let emailSent = false;
+  if (sendEmail) {
+    emailSent = await sendUserCredentialsEmailSafe({
+      firstName: user.firstName || "there",
+      email: user.email,
+      password: temporaryPassword,
+    });
+  }
+
+  return {
+    emailSent,
+    temporaryPasswordExpiresAt,
   };
 }
 

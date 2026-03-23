@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import {
   adminCreateUserSchema,
   adminUsersQuerySchema,
+  adminResetUserPasswordSchema,
   adminUserStatusSchema,
   adminVerificationSchema,
   adminProfileStatusSchema,
@@ -14,6 +15,7 @@ import {
   adminCreateUser,
   adminListUsers,
   adminGetUser,
+  adminResetUserPassword,
   adminUpdateUserStatus,
   adminUpdateVerification,
   adminUpdateProfileStatus,
@@ -110,6 +112,39 @@ export async function adminGetUserController(req: Request, res: Response) {
 
     return res.json(user);
   } catch (err: any) {
+    if (err.message === "USER_NOT_FOUND")
+      return res.status(404).json({ message: "User not found" });
+
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+/**
+ * POST /admin/users/:userId/reset-password
+ */
+export async function adminResetUserPasswordController(
+  req: Request,
+  res: Response,
+) {
+  try {
+    const userId = normalizeParam(req.params.userId);
+
+    if (!userId) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    const body = adminResetUserPasswordSchema.parse(req.body ?? {});
+    const result = await adminResetUserPassword(userId, body.sendEmail);
+
+    return res.json({
+      message: "Password reset initiated",
+      emailSent: result.emailSent,
+      temporaryPasswordExpiresAt: result.temporaryPasswordExpiresAt,
+    });
+  } catch (err: any) {
+    if (err instanceof ZodError) return validationError(res, err);
+
     if (err.message === "USER_NOT_FOUND")
       return res.status(404).json({ message: "User not found" });
 

@@ -7,6 +7,7 @@ const router = (0, express_1.Router)();
 router.post("/users", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminCreateUserController);
 router.get("/users", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminListUsersController);
 router.get("/users/:userId", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminGetUserController);
+router.post("/users/:userId/reset-password", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminResetUserPasswordController);
 router.patch("/users/:userId/status", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminUserStatusController);
 router.patch("/users/:userId/verification", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminVerificationController);
 router.patch("/users/:userId/profile-status", admin_middleware_1.requireAdminAuth, admin_users_controller_1.adminProfileStatusController);
